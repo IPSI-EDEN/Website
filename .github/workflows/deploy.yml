@@ -17,6 +17,13 @@ jobs:
     # Étape 2: Installer Docker
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+        
+    - name: Debug SSH connection
+      run: |
+        echo "${{ secrets.SERVER_SSH_KEY }}" > private_key.pem
+        chmod 600 private_key.pem
+        ssh -i private_key.pem -o StrictHostKeyChecking=no -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo SSH connection successful"
+    
 
     # Étape 3: Authentification SSH auprès du serveur
     - name: Deploy to Server via SSH
