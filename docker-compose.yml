@@ -3,11 +3,14 @@ version: '3.8'
 services:
   web:
     build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - /opt/eden:/app  # Monte le dossier /opt/eden de l'hôte dans le conteneur
     ports:
       - "8000:8000"
-    volumes:
-      - /opt/eden:/app
-      - /opt/eden/db.sqlite3:/app/db.sqlite3
     environment:
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-    restart: always
+      - DATABASE_URL=sqlite:///db.sqlite3  # Facultatif si vous voulez une variable d'environnement pour l'URL de la DB
+
+volumes:
+  # Si vous souhaitez persister les fichiers SQLite, vous pouvez utiliser un volume Docker pour le fichier db.sqlite3
+  db_data:
