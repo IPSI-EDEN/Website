@@ -22,32 +22,27 @@ jobs:
         chmod 600 private_key.pem
         ssh -i private_key.pem -o StrictHostKeyChecking=no -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo SSH connection successful"
 
-    - name: Deploy to Server via SSH
-      uses: appleboy/ssh-action@v0.1.1
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        port: 22
-        script: |
-          if [ ! -d /opt/eden ]; then
-            git clone git@github.com:IPSI-EDEN/Website.git /opt/eden 
-          fi
-
-          cd /opt/eden
-          
-          docker --version
-          docker ps
-          
-          docker stop django-web || true
-          docker rm django-web || true
-
-          docker build -t django-app .
-
-          docker run -d -p 8000:8000 --name django-web \
-            -v /opt/eden:/app \
-            -v /opt/eden/db.sqlite3:/app/db.sqlite3 \
-            -e DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} \
-            django-app
-
-          docker logs django-web
+        - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v0.1.1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            if [ ! -d /opt/eden ]; then
+              git clone git@github.com:IPSI-EDEN/Website.git /opt/eden 
+            fi
+            cd /opt/eden
+            docker --version
+            docker ps
+            docker stop django-web || true
+            docker rm django-web || true
+            docker build -t django-app .
+            docker run -d -p 8000:8000 --name django-web \
+              -v /opt/eden:/app \
+              -v /opt/eden/db.sqlite3:/app/db.sqlite3 \
+              -e DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} \
+              django-app
+            docker logs django-web
+      
