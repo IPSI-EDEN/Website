@@ -3,49 +3,51 @@ name: Deploy Django app with Docker
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up SSH keys
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Debug SSH connection
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan github.com >> ~/.ssh/known_hosts  # Ajoute GitHub à known_hosts pour éviter l'erreur de validation de l'hôte
+        echo "${{ secrets.SERVER_SSH_KEY }}" > private_key.pem
+        chmod 600 private_key.pem
+        ssh -i private_key.pem -o StrictHostKeyChecking=no -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo SSH connection successful"
 
     - name: Deploy to Server via SSH
       uses: appleboy/ssh-action@v0.1.1
       with:
-        host: ${{ secrets.SERVER_IP }}        # L'adresse IP de votre serveur
-        username: ${{ secrets.SERVER_USER }}   # Votre utilisateur SSH sur le serveur
-        key: ${{ secrets.SERVER_SSH_KEY }}     # Votre clé SSH privée pour se connecter au serveur
-        port: 22                              # Port SSH (le port par défaut est 22)
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: 22
         script: |
-          # Étape 4: Cloner le projet dans /opt/eden (si nécessaire)
           if [ ! -d /opt/eden ]; then
-            git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
+            git clone git@github.com:IPSI-EDEN/Website.git /opt/eden 
           fi
 
-          # Étape 5: Naviguer dans le répertoire du projet
           cd /opt/eden
-
-          # Arrêter et supprimer le conteneur existant
+          
+          docker --version
+          docker ps
+          
           docker stop django-web || true
           docker rm django-web || true
 
-          # Étape 6: Construire l'image Docker dans /opt/eden
           docker build -t django-app .
 
-          # Étape 7: Lancer un nouveau conteneur Docker
           docker run -d -p 8000:8000 --name django-web \
             -v /opt/eden:/app \
             -v /opt/eden/db.sqlite3:/app/db.sqlite3 \
             -e DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} \
             django-app
+
+          docker logs django-web
