@@ -1,0 +1,51 @@
+name: Deploy Django app with Docker
+
+on:
+  push:
+    branches:
+      - main  # Déclenche ce workflow lorsqu'il y a un push sur la branche main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Utilise la dernière version d'Ubuntu pour l'environnement de build
+
+    steps:
+    # Étape 1: Vérifier le code depuis le dépôt
+    - name: Checkout repository
+      uses: actions/checkout@v2  # Vérifie le code du dépôt
+
+    # Étape 2: Installer Docker
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # Étape 3: Authentification SSH auprès du serveur
+    - name: Deploy to Server via SSH
+      uses: appleboy/ssh-action@v0.1.1
+      with:
+        host: ${{ secrets.SERVER_IP }}        # L'adresse IP de votre serveur
+        username: ${{ secrets.SERVER_USER }}   # Votre utilisateur SSH sur le serveur
+        key: ${{ secrets.SERVER_SSH_KEY }}     # Votre clé SSH privée pour se connecter au serveur
+        port: 22                              # Port SSH (le port par défaut est 22)
+        script: |
+          # Étape 4: Cloner le projet dans /opt/eden (si nécessaire)
+          # Si vous n'avez pas encore cloné votre projet dans /opt/eden, vous pouvez le faire ici
+          if [ ! -d /opt/eden ]; then
+            git clone https://github.com/yourusername/Website.git /opt/eden  # Remplacez par votre URL GitHub
+          fi
+
+          # Étape 5: Naviguer dans le répertoire du projet
+          cd /opt/eden  # Changez le répertoire pour /opt/eden
+
+          # Arrêter et supprimer le conteneur existant (si nécessaire)
+          docker stop django-web || true
+          docker rm django-web || true
+
+          # Étape 6: Construire l'image Docker dans /opt/eden
+          docker build -t django-app .  # Le Dockerfile est dans /opt/eden
+
+          # Étape 7: Lancer un nouveau conteneur Docker
+          docker run -d -p 8000:8000 --name django-web \
+            -v /opt/eden:/app \               # Monte /opt/eden du serveur dans le conteneur
+            -v /opt/eden/db.sqlite3:/app/db.sqlite3 \  # Monte le fichier db.sqlite3 du serveur
+            -e DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} \  # Injecte la variable d'environnement
+            django-app
