@@ -30,7 +30,7 @@ jobs:
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           if [ ! -d /opt/eden ]; then
             echo "Le répertoire /opt/eden n'existe pas, création et clonage du projet..."
-            git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
+            sudo git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
           fi
 
           # Vérifier si le dépôt est cloné
@@ -42,12 +42,12 @@ jobs:
           cd /opt/eden
 
           # Vérifier les versions Docker et si le conteneur existe déjà
-          docker --version
-          docker ps
+          sudo docker --version
+          sudo docker ps
 
           # Arrêter et supprimer le conteneur existant
-          docker stop django-web || true
-          docker rm django-web || true
+          sudo docker stop django-web || true
+          sudo docker rm django-web || true
 
           # Vérifier si Dockerfile existe avant de construire
           if [ ! -f /opt/eden/Dockerfile ]; then
@@ -56,15 +56,15 @@ jobs:
           fi
 
           # Construire l'image Docker
-          docker build -t django-app .
+          sudo docker build -t django-app .
 
           # Lancer un nouveau conteneur
-          docker run -d -p 8000:8000 --name django-web \
+          sudo docker run -d -p 8000:8000 --name django-web \
             -v /opt/eden:/app \
             -v /opt/eden/db.sqlite3:/app/db.sqlite3 \
             -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
             django-app
 
           # Vérifier les logs du conteneur pour détecter les erreurs éventuelles
-          docker logs django-web
+          sudo docker logs django-web
         EOF
