@@ -33,12 +33,6 @@ jobs:
             sudo git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
           fi
 
-          # Vérifier si le dépôt est cloné
-          if [ ! -f /opt/eden/.git ]; then
-            echo "Erreur : Le dépôt Git n'a pas été cloné correctement dans /opt/eden"
-            exit 1
-          fi
-
           cd /opt/eden
 
           # Vérifier les versions Docker et si le conteneur existe déjà
