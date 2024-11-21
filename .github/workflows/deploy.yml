@@ -30,13 +30,13 @@ jobs:
           # Étape 4: Cloner le projet dans /opt/eden (si nécessaire)
           # Si vous n'avez pas encore cloné votre projet dans /opt/eden, vous pouvez le faire ici
           if [ ! -d /opt/eden ]; then
-            git clone https://github.com/yourusername/Website.git /opt/eden  # Remplacez par votre URL GitHub
+            git clone git@github.com:IPSI-EDEN/Website.git /opt/eden 
           fi
 
           # Étape 5: Naviguer dans le répertoire du projet
           cd /opt/eden  # Changez le répertoire pour /opt/eden
 
-          # Arrêter et supprimer le conteneur existant (si nécessaire)
+          # Arrêter et supprimer le conteneur existant
           docker stop django-web || true
           docker rm django-web || true
 
