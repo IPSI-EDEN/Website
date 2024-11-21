@@ -3,7 +3,8 @@ name: Deploy Django app with Docker
 on:
   push:
     branches:
-      - main  
+      - main
+
 jobs:
   build:
     runs-on: ubuntu-latest  
@@ -28,7 +29,14 @@ jobs:
         # Cloner le projet si nécessaire
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           if [ ! -d /opt/eden ]; then
+            echo "Le répertoire /opt/eden n'existe pas, création et clonage du projet..."
             git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
+          fi
+
+          # Vérifier si le dépôt est cloné
+          if [ ! -f /opt/eden/.git ]; then
+            echo "Erreur : Le dépôt Git n'a pas été cloné correctement dans /opt/eden"
+            exit 1
           fi
 
           cd /opt/eden
@@ -41,6 +49,12 @@ jobs:
           docker stop django-web || true
           docker rm django-web || true
 
+          # Vérifier si Dockerfile existe avant de construire
+          if [ ! -f /opt/eden/Dockerfile ]; then
+            echo "Dockerfile non trouvé !"
+            exit 1
+          fi
+
           # Construire l'image Docker
           docker build -t django-app .
 
@@ -48,7 +62,7 @@ jobs:
           docker run -d -p 8000:8000 --name django-web \
             -v /opt/eden:/app \
             -v /opt/eden/db.sqlite3:/app/db.sqlite3 \
-            -e DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} \
+            -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
             django-app
 
           # Vérifier les logs du conteneur pour détecter les erreurs éventuelles
