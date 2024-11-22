@@ -26,7 +26,7 @@ jobs:
         # Vérification si Docker est bien installé sur le serveur
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "docker --version || echo Docker is not installed"
         
-        # Cloner le projet si nécessaire
+        # Cloner le projet si nécessaire ou mettre à jour si déjà présent
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           if [ ! -d /opt/eden/ ]; then
             echo "Le répertoire /opt/eden n'existe pas, création et clonage du projet..."
