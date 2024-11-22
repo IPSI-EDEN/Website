@@ -7,11 +7,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2 
+      uses: actions/checkout@v2
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -19,39 +19,44 @@ jobs:
     - name: Set up SSH agent
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.SERVER_SSH_KEY }} 
+        ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
     - name: Deploy to Server via SSH
       run: |
-        # Vérification si Docker est bien installé sur le serveur
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "docker --version || echo Docker is not installed"
-        
-        # Cloner le projet si nécessaire ou mettre à jour si déjà présent
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          set -e  # Stop immediately if any command fails
+
+          # Vérifier si Docker est installé
+          if ! command -v docker &> /dev/null; then
+            echo "Docker n'est pas installé. Veuillez l'installer avant de continuer."
+            exit 1
+          fi
+
+          # Vérifier le répertoire de l'application
           if [ ! -d /opt/eden/ ]; then
-            echo "Le répertoire /opt/eden n'existe pas, création et clonage du projet..."
+            echo "Création du répertoire et clonage du projet..."
             git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
           else
-            echo "Le répertoire /opt/eden existe, mise à jour du projet..."
+            echo "Mise à jour du projet existant..."
             cd /opt/eden
-            git pull origin main
+            if git fetch --dry-run; then
+              git pull origin main
+            else
+              echo "Aucune mise à jour disponible."
+            fi
           fi
 
           cd /opt/eden
 
-          # Vérifier les versions Docker et si le conteneur existe déjà
-          sudo docker --version
-          sudo docker ps
-
-          # Arrêter et supprimer le conteneur existant
-          sudo docker stop eden || true
-          sudo docker rm eden || true
-
-          # Vérifier si Dockerfile existe avant de construire
-          if [ ! -f /opt/eden/Dockerfile ]; then
-            echo "Dockerfile non trouvé !"
+          # Vérifier Dockerfile
+          if [ ! -f Dockerfile ]; then
+            echo "Dockerfile manquant dans le projet !"
             exit 1
           fi
+
+          # Arrêter et supprimer les conteneurs existants
+          sudo docker stop eden || true
+          sudo docker rm eden || true
 
           # Construire l'image Docker
           sudo docker build -t django-app .
@@ -62,6 +67,6 @@ jobs:
             -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
             django-app
 
-          # Vérifier les logs du conteneur pour détecter les erreurs éventuelles
-          sudo docker logs eden
+          # Vérification des logs pour erreurs
+          sudo docker logs --tail 50 eden
         EOF
