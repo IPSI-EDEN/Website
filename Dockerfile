@@ -7,9 +7,14 @@ WORKDIR /app
 # Copy the requirements.txt into the container
 COPY requirements.txt .
 
+# Install required system dependencies for building Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends gcc && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create a virtual environment and install dependencies
-RUN python -m venv .env && \
-    ./.env/bin/pip install --no-cache-dir -r requirements.txt
+RUN python -m venv /app/.env && \
+    /app/.env/bin/pip install --no-cache-dir --upgrade pip && \
+    /app/.env/bin/pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code into the container
 COPY . .
