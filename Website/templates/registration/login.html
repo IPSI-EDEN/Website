@@ -4,7 +4,7 @@
 
 {% block content %}
 <br><br><br>
-<div class="login-container" style="max-width: 600px; margin: auto;">
+<div class="login-container">
     {% if last_error %}
         <span class="label label-danger" style="color: red;">{{ last_error }}</span>
         <br>
@@ -14,7 +14,7 @@
         <div class="form-group">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary bi bi-door-open-fill" style="background-color: #698739; border: none; width: 30%;"> Login </button>
+            <button type="submit" class="btn btn-primary bi bi-door-open-fill"> Login </button>
         </div>
     </form>
 </div>

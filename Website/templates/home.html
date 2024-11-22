@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<section class="dashboard" id="current-state">
+    <article class="gauge">
+        <h2>Température</h2>
+        <canvas id="tempetureGauge"></canvas>
+    </article>
+    
+    <article class="gauge">
+        <h2>Humidité</h2>
+        <canvas id="humidityGauge"></canvas>
+    </article>
+    
+    <article class="gauge">
+        <h2>Humidité du sol</h2>
+        <canvas id="moistGauge"></canvas>
+    </article>
+    
+    <article class="gauge">
+        <h2>Niveau d'eau dans la cuve</h2>
+        <canvas id="waterLevelChart"></canvas>
+    </article>
+    
+</section>
+    
+<section class="dashboard" id="history">
+    <article class="sensor">
+        <h2>Température</h2>
+        <canvas id="temperatureChart"></canvas>
+    </article>
+    
+    <article class="indicator">
+        <h2>Pompe <span id="pump-status" class="status"></span></h2>
+        <h2>Fenêtre <span id="window-status" class="status"></span></h2>
+    </article>
+    
+    <article class="sensor">
+        <h2>Humidité</h2>
+        <canvas id="humidityChart"></canvas>
+    </article>
+    
+    <article class="sensor">
+        <h2>Humidité du sol</h2>
+        <canvas id="moistChart"></canvas>
+    </article>
+    
+    <article class="sensor">
+        <h2>Puissance consommée</h2>
+        <canvas id="voltageChart"></canvas>
+    </article>
+    
+    <article class="sensor">
+        <h2>Puissance reçue</h2>
+        <canvas id="powerChart"></canvas>
+    </article>
+</section>
+
+{% endblock %}
