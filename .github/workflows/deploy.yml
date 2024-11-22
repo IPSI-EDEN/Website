@@ -62,9 +62,17 @@ jobs:
           docker build -t django-app .
 
           # Lancer un nouveau conteneur
-          docker run -e DB_NAME=eden -e DB_USER=${{ secrets.SERVER_USER }} -e DB_PASSWORD=${{ secrets.BDD_MDP }} -e DB_HOST=${{ secrets.SERVER_IP }} -e DB_PORT=5432 -e DB_SSLMODE=disable -d -p 8000:8000 --name eden \
+          docker run -d -p 8000:8000 --name eden \
             -v /opt/eden:/app \
+            -e DB_NAME=eden \
+            -e DB_USER="${{ secrets.SERVER_USER }}" \
+            -e DB_PASSWORD="${{ secrets.BDD_MDP }}" \
+            -e DB_HOST="${{ secrets.SERVER_IP }}" \
+            -e DB_PORT="5432" \
+            -e DB_PORT="5432" \
+            -e DB_SSLMODE=disable \
             -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
+            -e DJANGO_ENV="production" \
             django-app
           
           docker exec -i eden python manage.py migrate
