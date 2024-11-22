@@ -11,6 +11,9 @@ COPY requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends gcc && \
     rm -rf /var/lib/apt/lists/*
 
+# Create the .env directory
+RUN mkdir -p /app/.env
+
 # Create a virtual environment and install dependencies
 RUN python -m venv /app/.env && \
     /app/.env/bin/pip install --no-cache-dir --upgrade pip && \
