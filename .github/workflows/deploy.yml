@@ -31,6 +31,10 @@ jobs:
           if [ ! -d /opt/eden/ ]; then
             echo "Le répertoire /opt/eden n'existe pas, création et clonage du projet..."
             git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
+          else
+            echo "Le répertoire /opt/eden existe, mise à jour du projet..."
+            cd /opt/eden
+            git pull origin main
           fi
 
           cd /opt/eden
