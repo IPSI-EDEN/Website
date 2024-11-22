@@ -34,5 +34,5 @@ def logout_view(request):
 
 def home_page(request):
     if request.user.is_authenticated:
-        return redirect('home_page')
+        return render(request, 'home.html')
     return redirect('login')
