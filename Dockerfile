@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy the application code into the container
 COPY . .
 
+# Collecter les fichiers statiques
+RUN python manage.py collectstatic --noinput
+
 # Expose the port Django runs on (default: 8000)
 EXPOSE 8000
 
