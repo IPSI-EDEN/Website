@@ -28,9 +28,9 @@ jobs:
         
         # Cloner le projet si nécessaire
         ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          if [ ! -d /opt/eden ]; then
+          if [ ! -d /opt/eden/ ]; then
             echo "Le répertoire /opt/eden n'existe pas, création et clonage du projet..."
-            sudo git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
+            git clone git@github.com:IPSI-EDEN/Website.git /opt/eden
           fi
 
           cd /opt/eden
