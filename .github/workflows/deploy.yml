@@ -77,7 +77,8 @@ jobs:
             django-app
           
           docker exec -i eden python manage.py migrate
-          docker exec -i eden python manage.py collectstatic --noinput
+
+          docker exec -i eden python manage.py collectstatic
           
           # Vérification des logs pour erreurs
           sudo docker logs --tail 50 eden
