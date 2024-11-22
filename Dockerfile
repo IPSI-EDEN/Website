@@ -26,4 +26,5 @@ COPY . .
 EXPOSE 8000
 
 # Default command to run the Django application
-CMD ["/app/.env/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["/bin/bash", "-c", "source /app/.env/bin/activate && python manage.py runserver 0.0.0.0:8000"]
+
