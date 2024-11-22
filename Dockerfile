@@ -11,16 +11,9 @@ COPY requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends gcc && \
     rm -rf /var/lib/apt/lists/*
 
-# Create the .env directory (Ensure it's created)
-RUN mkdir -p /app/.env
-
-# Create a virtual environment and install dependencies
-RUN python -m venv /app/.env && \
-    /app/.env/bin/pip install --no-cache-dir --upgrade pip && \
-    /app/.env/bin/pip install --no-cache-dir -r requirements.txt
-
-# Check if the virtual environment was created correctly
-RUN if [ ! -f /app/.env/bin/activate ]; then echo "Environment not created correctly"; exit 1; fi
+# Install the Python dependencies globally (without a virtual environment)
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code into the container
 COPY . .
@@ -29,4 +22,4 @@ COPY . .
 EXPOSE 8000
 
 # Default command to run the Django application
-CMD ["/app/.env/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
