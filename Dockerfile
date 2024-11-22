@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN python -m venv venv
 
 # Activer l'environnement virtuel et installer les dépendances
-RUN . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
+RUN .venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 
 # Copier tout le code de votre application Django dans le conteneur
 COPY . .
@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 8000
 
 # Commande par défaut pour lancer l'application Django
-CMD ["sh", "-c", ". venv/bin/activate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", ".venv/bin/activate && python manage.py runserver 0.0.0.0:8000"]
