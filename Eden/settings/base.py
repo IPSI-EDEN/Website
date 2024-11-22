@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Website',
 ]
 
 MIDDLEWARE = [
@@ -78,14 +79,12 @@ TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
 USE_TZ = True
 
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+STATICFILES_DIRS = [
+    BASE_DIR  / 'Eden/static',
 ]
 
-STATICFILES_DIRS = [
-    BASE_DIR / "Eden/static",
-]
+print('BASE_DIR:', BASE_DIR)
+print('STATICFILES_DIRS:', STATICFILES_DIRS)
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'Eden/staticfiles'
