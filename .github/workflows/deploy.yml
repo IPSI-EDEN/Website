@@ -62,7 +62,7 @@ jobs:
           docker build -t django-app .
 
           # Lancer un nouveau conteneur
-          docker run -d -p 8000:8000 --name eden \
+          docker run -d -p 127.0.0.1:8000:8000 --name eden \
             -v /opt/eden:/app \
             -e DB_NAME="eden" \
             -e DB_USER="${{ secrets.SERVER_USER }}" \
