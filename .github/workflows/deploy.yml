@@ -40,8 +40,8 @@ jobs:
           sudo docker ps
 
           # Arrêter et supprimer le conteneur existant
-          sudo docker stop django-web || true
-          sudo docker rm django-web || true
+          sudo docker stop eden || true
+          sudo docker rm eden || true
 
           # Vérifier si Dockerfile existe avant de construire
           if [ ! -f /opt/eden/Dockerfile ]; then
@@ -53,9 +53,8 @@ jobs:
           sudo docker build -t django-app .
 
           # Lancer un nouveau conteneur
-          sudo docker run -d -p 8000:8000 --name django-web \
+          sudo docker run -d -p 8000:8000 --name eden \
             -v /opt/eden:/app \
-            -v /opt/eden/db.sqlite3:/app/db.sqlite3 \
             -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
             django-app
 
