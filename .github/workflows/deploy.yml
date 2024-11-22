@@ -55,19 +55,19 @@ jobs:
           fi
 
           # Arrêter et supprimer les conteneurs existants
-          sudo docker stop eden || true
-          sudo docker rm eden || true
+          docker stop eden || true
+          docker rm eden || true
 
           # Construire l'image Docker
-          sudo docker build -t django-app .
+          docker build -t django-app .
 
           # Lancer un nouveau conteneur
-          sudo docker run -e DB_NAME=eden -e DB_USER=${{ secrets.SERVER_USER }} -e DB_PASSWORD=${{ secrets.BDD_MDP }} -e DB_HOST=${{ secrets.SERVER_IP }} -e DB_PORT=5432 -e DB_SSLMODE=disable -d -p 8000:8000 --name eden \
+          docker run -e DB_NAME=eden -e DB_USER=${{ secrets.SERVER_USER }} -e DB_PASSWORD=${{ secrets.BDD_MDP }} -e DB_HOST=${{ secrets.SERVER_IP }} -e DB_PORT=5432 -e DB_SSLMODE=disable -d -p 8000:8000 --name eden \
             -v /opt/eden:/app \
             -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
             django-app
           
-          docker exec -it eden python manage.py migrate
+          docker exec -i eden python manage.py migrate
           
           # Vérification des logs pour erreurs
           sudo docker logs --tail 50 eden
