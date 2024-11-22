@@ -10,19 +10,30 @@ var moistData = [];
 var voltageData = [];
 var powerData = [];
 var timeStamp = [];
+var powerTimestamp = [];
+
+var initialized = false;
 
 // Fonction pour établir la connexion WebSocket
 function wsConnect() {
     ws = new WebSocket(wsUri);
 
+    ws.onopen = function () {
+        
+    };
+
+    ws.onclose = function () {
+        setTimeout(wsConnect, 3000);
+    };
+
     ws.onmessage = function (msg) {
         var dataArray = JSON.parse(msg.data);
-
-        initializeCharts(dataArray);
 
         // Remplacez la partie correspondante de la fonction ws.onmessage
         if (Array.isArray(dataArray) && dataArray.length > 0) {
             var data = dataArray[dataArray.length - 1];
+
+            updateCharts(dataArray);
 
             // Ajouter les nouvelles données aux tableaux de données des graphiques
             temperatureData.push(data.temperature);
@@ -38,27 +49,19 @@ function wsConnect() {
 
             updatePumpStatus(data.pump);
             updateWindowStatus(data.window);
+
+        
             timeStamp.push(data.timestamp);
+            if (data.powerTimestamp != null) {
+                console.log(data.voltage);  
+                powerTimestamp.push(data.powerTimestamp);
+            }
 
             // Mettre à jour les graphiques avec les nouvelles données
             updateCharts();
         }
 
     };
-
-    ws.onopen = function () {
-        updateStatus("connected");
-    };
-
-    ws.onclose = function () {
-        updateStatus("not connected");
-        setTimeout(wsConnect, 3000);
-    };
-
-    function updateStatus(status) {
-        var badge = document.getElementById('badge');
-        badge.className = 'badge ' + (status === 'connected' ? 'badge-green' : 'badge-red');
-    }
 
     function updatePumpStatus(status) {
         var pumpStatusElement = document.getElementById('pump-status');
@@ -94,6 +97,39 @@ const configTemperature = {
             fill: false,
         }]
     },
+    options: {
+        tooltips: {
+            callbacks: {
+                title: function(tooltipItems, data) {
+                    // Prend l'étiquette actuelle et la divise pour insérer un saut de ligne entre la date et l'heure.
+                    // Cette opération suppose que la date et l'heure dans l'étiquette sont séparées par un espace,
+                    // un tiret, ou tout autre caractère spécifique qui ne nécessite pas de formatage complexe.
+                    var label = tooltipItems[0].label;
+                    return label.replace(' ', '\n');
+                }
+            }
+        },
+        scales: {
+            xAxes: [{
+                type: 'time',
+                distribution: 'linear',
+                time: {
+                    parser: 'DD/MM/YYYY HH:mm:ss', // Adaptez ce format au format de vos données si nécessaire
+                    tooltipFormat: 'DD/MM/YYYY HH:mm:ss'
+                },
+                ticks: {
+                    autoSkip: true,
+                    maxTicksLimit: 20
+                }
+            }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+    
 };
 
 const configHumidity = {
@@ -127,7 +163,7 @@ const configMoist = {
 var configVoltage = {
     type: 'line',
     data: {
-        labels: timeStamp,
+        labels: powerTimestamp,
         datasets: [{
             label: 'Puissance (W)',
             backgroundColor: 'rgba(255, 206, 86, 0.2)',
@@ -175,7 +211,7 @@ const lines =
 
             ctx.font = 'bold 14px sans-serif';
             ctx.fillStyle = 'grey';
-            ctx.fillText(data.datasets[0].data, barThickness - 60, 0 - singleUnit * data.datasets[0].data)
+            ctx.fillText(data.datasets[0].data, barThickness - 80, 0 - singleUnit * data.datasets[0].data)
 
             ctx.restore();
         }
@@ -384,7 +420,7 @@ var configCurrentMoist = {
 var configPower = {
     type: 'line',
     data: {
-        labels: timeStamp,
+        labels: powerTimestamp,
         datasets: [{
             label: 'Puissance (W)',
             backgroundColor: 'rgba(255, 206, 86, 0.2)',
@@ -401,15 +437,24 @@ var humidityChart = new Chart(document.getElementById('humidityChart').getContex
 var moistChart = new Chart(document.getElementById('moistChart').getContext('2d'), configMoist);
 var voltageChart = new Chart(document.getElementById('voltageChart').getContext('2d'), configVoltage);
 var waterChart = new Chart(document.getElementById('waterLevelChart').getContext('2d'), configWaterLevel);
-var temperatureGauge = new Chart(document.getElementById('tempetureGauge').getContext('2d'), configCurrentTemp);
+var temperatureGauge = new Chart(document.getElementById('temperatureGauge').getContext('2d'), configCurrentTemp);
 var humidityGauge = new Chart(document.getElementById('humidityGauge').getContext('2d'), configCurrentHumidity);
 var moistGauge = new Chart(document.getElementById('moistGauge').getContext('2d'), configCurrentMoist);
 var powerChart = new Chart(document.getElementById('powerChart').getContext('2d'), configPower);
 
-var initialized = false;
+var temperatureChartCarousel = new Chart(document.getElementById('temperatureChartCarousel').getContext('2d'), configTemperature);
+var humidityChartCarousel = new Chart(document.getElementById('humidityChartCarousel').getContext('2d'), configHumidity);
+var moistChartCarousel = new Chart(document.getElementById('moistChartCarousel').getContext('2d'), configMoist);
+var voltageChartCarousel = new Chart(document.getElementById('voltageChartCarousel').getContext('2d'), configVoltage);
+var waterChartCarousel = new Chart(document.getElementById('waterLevelChartCarousel').getContext('2d'), configWaterLevel);
+var temperatureGaugeCarousel = new Chart(document.getElementById('temperatureGaugeCarousel').getContext('2d'), configCurrentTemp);
+var humidityGaugeCarousel = new Chart(document.getElementById('humidityGaugeCarousel').getContext('2d'), configCurrentHumidity);
+var moistGaugeCarousel = new Chart(document.getElementById('moistGaugeCarousel').getContext('2d'), configCurrentMoist);
+var powerChartCarousel = new Chart(document.getElementById('powerChartCarousel').getContext('2d'), configPower);
 
-// Fonction pour initialiser les graphiques
-function initializeCharts(data) {
+// Fonction pour mettre à jour les graphiques
+function updateCharts(data) {
+
     if (!initialized) {
         data.forEach(function (item) {
             temperatureData.push(item.temperature);
@@ -418,24 +463,31 @@ function initializeCharts(data) {
             voltageData.push(item.voltage);
             powerData.push(item.power);
             timeStamp.push(item.timestamp);
+            if(item.powerTimestamp != null) {
+                powerTimestamp.push(item.powerTimestamp);
+            }
         });
-        // Mettre à jour les graphiques avec les valeurs initiales
-        updateCharts();
-
-        // Marquer les tableaux comme initialisés
-        initialized = true;
     }
-}
 
-// Fonction pour mettre à jour les graphiques
-function updateCharts() {
+    initialized = true;
+
     temperatureChart.update();
     humidityChart.update();
     moistChart.update();
-    voltageChart.update();
+    voltageChart.update(); 
     powerChart.update();
     waterChart.update();
     temperatureGauge.update();
     humidityGauge.update();
     moistGauge.update();
+
+    temperatureChartCarousel.update();
+    humidityChartCarousel.update();
+    moistChartCarousel.update();
+    voltageChartCarousel.update(); 
+    powerChartCarousel.update();
+    waterChartCarousel.update();
+    temperatureGaugeCarousel.update();
+    humidityGaugeCarousel.update();
+    moistGaugeCarousel.update();
 }

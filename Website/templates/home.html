@@ -4,59 +4,162 @@
 
 {% block content %}
 
-<section class="dashboard" id="current-state">
-    <article class="gauge">
-        <h2>Température</h2>
-        <canvas id="tempetureGauge"></canvas>
-    </article>
-    
-    <article class="gauge">
-        <h2>Humidité</h2>
-        <canvas id="humidityGauge"></canvas>
-    </article>
-    
-    <article class="gauge">
-        <h2>Humidité du sol</h2>
-        <canvas id="moistGauge"></canvas>
-    </article>
-    
-    <article class="gauge">
-        <h2>Niveau d'eau dans la cuve</h2>
-        <canvas id="waterLevelChart"></canvas>
-    </article>
-    
-</section>
-    
-<section class="dashboard" id="history">
-    <article class="sensor">
-        <h2>Température</h2>
-        <canvas id="temperatureChart"></canvas>
-    </article>
-    
-    <article class="indicator">
-        <h2>Pompe <span id="pump-status" class="status"></span></h2>
-        <h2>Fenêtre <span id="window-status" class="status"></span></h2>
-    </article>
-    
-    <article class="sensor">
-        <h2>Humidité</h2>
-        <canvas id="humidityChart"></canvas>
-    </article>
-    
-    <article class="sensor">
-        <h2>Humidité du sol</h2>
-        <canvas id="moistChart"></canvas>
-    </article>
-    
-    <article class="sensor">
-        <h2>Puissance consommée</h2>
-        <canvas id="voltageChart"></canvas>
-    </article>
-    
-    <article class="sensor">
-        <h2>Puissance reçue</h2>
-        <canvas id="powerChart"></canvas>
-    </article>
-</section>
+<div class="container-fluid padding-10 pc-display">
+	<div class="row padding-10">
+		<div class="col-3 align-center">
+			<h2>Température</h2>
+			<canvas id="temperatureGauge"></canvas>
+		</div>
+		
+		<div class="col-3 align-center">
+			<h2>Humidité</h2>
+			<canvas id="humidityGauge"></canvas>
+		</div>
+		
+		<div class="col-3 align-center">
+			<h2>Humidité du sol</h2>
+			<canvas id="moistGauge"></canvas>
+		</div>
+		
+		<div class="col-3 align-center">
+			<h2>Niveau d'eau dans la cuve</h2>
+			<canvas id="waterLevelChart"></canvas>
+		</div>
+	</div>
+		
+	<div class="row padding-10">
+		<div class="col-6 align-center">
+			<h2>Température</h2>
+			<canvas id="temperatureChart"></canvas>
+		</div>
+		<div class="col-3 align-center">
+			<h2>Pompe</h2>
+			<span id="pump-status" class="status"></span>
+		</div>
+		<div class="col-3 align-center">
+			<h2>Fenêtre</h2>
+			<span id="window-status" class="status"></span>
+		</div>
+	</div>
+	
+	<div class="row padding-10">
+		<div class="col-6 align-center">
+			<h2>Humidité</h2>
+			<canvas id="humidityChart"></canvas>
+		</div>
+
+		<div class="col-6 align-center">
+			<h2>Humidité du sol</h2>
+			<canvas id="moistChart"></canvas>
+		</div>
+	</div>
+
+	<div class="row padding-10">
+		<div class="col-6 align-center">
+			<h2>Puissance consommée</h2>
+			<canvas id="voltageChart"></canvas>
+		</div>
+		
+		<div class="col-6 align-center">
+			<h2>Puissance reçue</h2>
+			<canvas id="powerChart"></canvas>
+		</div>
+	</div>
+</div>
+
+<div class="container-fluid padding-10 phone-display">
+	<div id="gaugesCarousel" class="carousel slide padding-10 auto-height" data-ride="carousel">
+	  <div class="carousel-inner auto-height">
+		<div class="carousel-item active align-center">
+		  <h2>Température</h2>
+		  <canvas id="temperatureGaugeCarousel"></canvas>
+		</div>
+		<div class="carousel-item align-center">
+		  <h2>Humidité</h2>
+		  <canvas id="humidityGaugeCarousel"></canvas>
+		</div>
+		<div class="carousel-item align-center">
+		  <h2>Humidité du sol</h2>
+		  <canvas id="moistGaugeCarousel"></canvas>
+		</div>
+		<div class="carousel-item align-center">
+		  <h2>Niveau d'eau dans la cuve</h2>
+		  <canvas id="waterLevelChartCarousel"></canvas>
+		</div>
+	  </div>
+	  <a class="carousel-control-prev" href="#gaugesCarousel" role="button" data-slide="prev">
+		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	  </a>
+	  <a class="carousel-control-next" href="#gaugesCarousel" role="button" data-slide="next">
+		<span class="carousel-control-next-icon" aria-hidden="true"></span>
+	  </a>
+	</div>
+	<div class="horizontal-line"></div>
+	<div id="controlsCarousel" class="carousel slide padding-10" data-ride="carousel">
+	  <div class="carousel-inner">
+		<div class="carousel-item active align-center">
+		  <h2>Température</h2>
+		  <canvas id="temperatureChartCarousel"></canvas>
+		</div>
+		<div class="carousel-item align-center">
+			<h2>Pompe</h2>
+			<div class="custom-control custom-switch">
+				<input type="checkbox" class="custom-control-input" id="pumpSwitch">
+				<label class="custom-control-label" for="pumpSwitch">Pompe éteinte</label>
+			</div>
+		</div>
+		<div class="carousel-item align-center">
+			<h2>Fenêtre</h2>
+			<div class="custom-control custom-switch">
+				<input type="checkbox" class="custom-control-input" id="windowSwitch">
+				<label class="custom-control-label" for="windowSwitch">Fenêtre fermée</label>
+			</div>
+		</div>
+	  </div>
+	  <a class="carousel-control-prev" href="#controlsCarousel" role="button" data-slide="prev">
+		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	  </a>
+	  <a class="carousel-control-next" href="#controlsCarousel" role="button" data-slide="next">
+		<span class="carousel-control-next-icon" aria-hidden="true"></span>
+	  </a>
+	</div>
+	<div class="horizontal-line"></div>
+	<div id="waterCarousel" class="carousel slide padding-10" data-ride="carousel">
+		<div class="carousel-inner">
+		  <div class="carousel-item active align-center">
+			<h2>Humidité</h2>
+			<canvas id="humidityChartCarousel"></canvas>
+		  </div>
+		  <div class="carousel-item align-center">
+			<h2>Humidité du sol</h2>
+			<canvas id="moistChartCarousel"></canvas>
+		  </div>
+		  <a class="carousel-control-prev" href="#waterCarousel" role="button" data-slide="prev">
+			  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+		  </a>
+		  <a class="carousel-control-next" href="#waterCarousel" role="button" data-slide="next">
+			  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+		  </a>
+	</div>
+	<div class="horizontal-line"></div>
+	<div id="chartsCarousel" class="carousel slide padding-10" data-ride="carousel">
+	  <div class="carousel-inner">
+		<div class="carousel-item active align-center">
+		  <h2>Puissance consommée</h2>
+		  <canvas id="voltageChartCarousel"></canvas>
+		</div>
+		<div class="carousel-item align-center">
+		  <h2>Puissance reçue</h2>
+		  <canvas id="powerChartCarousel"></canvas>
+		</div>
+		<a class="carousel-control-prev" href="#chartsCarousel" role="button" data-slide="prev">
+			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+		</a>
+		<a class="carousel-control-next" href="#chartsCarousel" role="button" data-slide="next">
+			<span class="carousel-control-next-icon" aria-hidden="true"></span>
+		</a>
+	</div>
+  </div>
+</div>  
 
 {% endblock %}

@@ -1,137 +1,166 @@
-body
+body 
 {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #e5e5cc; /* Couleur de fond beige clair */
-}
-    
-h2
-{
-	text-align: center;
+    background-color: #e5e5cc;
+    overflow-x: hidden;
 }
 
-.dashboard
+.eden-green
 {
-	max-width: 1200px;
-	margin: 20px auto;
+	background-color: #336633;
 }
 
-#current-state
-{
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	grid-gap: 20px;
-}
-
-#history
-{
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	grid-gap: 100px;
-}
-
-.status
-{
-	padding: 10px;
-	border-radius: 4px;
-	text-align: center;
-	font-weight: bold;
-	margin-left: 10px;
-	align-items: center;
-}
-
-#pump-status
-{
-	padding-top: 60px;
-	margin-left: 0px;
-	padding-left: 0px;
-}
-
-#window-status
-{
-	padding-top: 60px;
-	margin-left: 0px;
-	padding-left: 0px;
-}
-
-.select
-{
-	margin-bottom: 10px;
-	padding: 8px;
-}
-
-header
-{
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 10px;
-	background-color: #336633; /* Vert foncé */
-	color: #fff;
-}
-
-.site-info, .logo, .status
-{
-	display: flex;
-	align-items: center;
-}
-
-.indicator
-{
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-}
-
-.logo svg
-{
-	margin-right: 10px;
-	height: 70px;
-}
-
-.chart-container
-{
-	display: flex;
-	flex-direction: row;
-	justify-content: space-around;
-	align-items: center;
-	margin-top: 20px;
-}
-
-.chart-container canvas
-{
-	max-width: 100%;
-	margin: 0;
-}
-
-/* Connection Status Styles */
-.connection-status
-{
-	display: flex;
-	align-items: center;
-	margin-top: 20px;
-}
-
-.status-text
-{
-	margin-right: 10px;
-	font-weight: bold;
-}
-
-.badge
-{
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-}
-
-.badge-green
+.connected
 {
 	background-color: #4CAF50;
 }
 
-.badge-red
+.disconnected
 {
 	background-color: #FF5555;
+}
+
+.padding-10
+{
+	padding: 10px;
+}
+
+.align-center
+{
+	text-align: center;
+}
+
+h2
+{
+	font-weight: bold;
+}
+
+.horizontal-line 
+{
+	height: 3px;
+	background-color: #336633;
+	opacity: 0.5;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+  
+.auto-height
+{
+	height: auto !important;
+}
+
+/* BOOTSTRAP CUSTOMIZATION */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-image: none;
+}
+
+.carousel-control-prev-icon:after,
+.carousel-control-next-icon:after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: solid #336633;
+  border-width: 0 7px 7px 0;
+  opacity: 0.7;
+}
+
+.carousel-control-prev-icon:after {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg); /* Safari */
+  margin-left: -10px;
+}
+
+.carousel-control-next-icon:after {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg); /* Safari */
+  margin-right: -10px;
+}
+
+.carousel {
+	height: 350px;
+}
+
+.carousel-inner
+{
+	height: 350px;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before 
+{
+	background-color: #336633 !important;
+	opacity: 0.9;
+	border-color: #336633;
+}
+  
+.custom-control-input:checked ~ .custom-control-label::after 
+{
+	background-color: #ffffff !important;
+}
+
+.custom-control-input:not(:checked) ~ .custom-control-label::before 
+{
+	background-color: #adb5bd;
+	opacity: 0.5;
+	border-color: #adb5bd;
+}
+
+.custom-control-input:focus ~ .custom-control-label::before 
+{
+	box-shadow: 0 0 0 1px #e5e5cc, 0 0 0 3px #336633;
+}
+/* END OF BOOTSTRAP CUSTOMIZATION */
+
+/* Viewing on small screen */
+@media (max-width: 991.98px) 
+{
+    .row 
+	{
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+    }
+
+	.col-3, .col-6
+	{
+		min-width: 100% !important;
+	}
+
+	.pc-display
+	{
+		display: none !important;
+	}
+
+	.phone-display
+	{
+		display: block !important;
+	}
+}
+
+/* Viewing on really small screen */
+@media (max-width: 575.98px) 
+{
+	.carousel
+	{
+		height: 220px;
+	}
+
+	.carousel-inner
+	{
+		height: 220px;
+	}
+}
+
+/* Viewing on large screen */
+@media (min-width: 991.98px)
+{
+	.pc-display
+	{
+		display: block !important;
+	}
+
+	.phone-display
+	{
+		display: none !important;
+	}
 }
