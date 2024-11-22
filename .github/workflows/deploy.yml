@@ -62,7 +62,7 @@ jobs:
           sudo docker build -t django-app .
 
           # Lancer un nouveau conteneur
-          sudo docker run -e DB_NAME=Eden -e DB_USER=${{ secrets.SERVER_USER }} -e DB_PASSWORD=${{ secrets.BDD_MDP }} -e DB_HOST=${{ secrets.SERVER_IP }} -e DB_PORT=5432 -e DB_SSLMODE=disable -d -p 8000:8000 --name eden \
+          sudo docker run -e DB_NAME=eden -e DB_USER=${{ secrets.SERVER_USER }} -e DB_PASSWORD=${{ secrets.BDD_MDP }} -e DB_HOST=${{ secrets.SERVER_IP }} -e DB_PORT=5432 -e DB_SSLMODE=disable -d -p 8000:8000 --name eden \
             -v /opt/eden:/app \
             -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
             django-app
