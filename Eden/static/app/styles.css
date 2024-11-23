@@ -25,34 +25,7 @@ body {
 }
 
 .container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 20px; /* Ajout d'un padding global */
-}
-
-.card {
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff; /* Fond blanc pour les cartes */
-}
-
-.btn-primary,
-.btn-success {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    transition: background-color 0.3s, border-color 0.3s;
-}
-
-.btn-primary:hover,
-.btn-success:hover {
-    background-color: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-}
-
-.alert {
-    margin-top: 20px;
-    border-radius: 5px;
 }
 
 h2, h3, h4, h5, h6 {
@@ -71,7 +44,60 @@ h2, h3, h4, h5, h6 {
     height: auto !important;
 }
 
-/* 3. État des Connexions */
+/* 3. Styles des Cartes */
+.card {
+    border-radius: 10px;
+    border: 1px solid var(--color-secondary);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-header {
+    background-color: var(--color-secondary);
+    color: var(--color-white);
+    border-bottom: 1px solid var(--color-secondary);
+    padding: 10px;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 4. Boutons */
+.btn-primary,
+.btn-success {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-primary:hover,
+.btn-success:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+}
+
+/* 5. Alertes */
+.alert {
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+/* 6. État des Connexions */
 .status-connected {
     background-color: var(--color-success);
 }
@@ -80,7 +106,7 @@ h2, h3, h4, h5, h6 {
     background-color: var(--color-danger);
 }
 
-/* 4. Padding et Alignement */
+/* 7. Padding et Alignement */
 .padding-10 {
     padding: 10px;
 }
@@ -89,116 +115,107 @@ h2, h3, h4, h5, h6 {
     text-align: center;
 }
 
-/* 5. Personnalisations Bootstrap */
+/* 8. Personnalisations Bootstrap */
 
-/* Personnalisation des icônes de contrôle du carousel */
+/* Personnalisation des icônes de contrôle du carrousel */
+.carousel-control-prev,
+.carousel-control-next {
+    background: rgba(255, 255, 255, 0.5); /* Fond semi-transparent */
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
-    background-image: none;
+    background: none; /* Suppression de l'arrière-plan par défaut */
 }
 
 .carousel-control-prev-icon::after,
 .carousel-control-next-icon::after {
     content: '';
     display: inline-block;
-    width: 20px;
-    height: 20px;
-    background: transparent;
-    border: solid var(--color-secondary);
-    border-width: 0 7px 7px 0;
-    opacity: 0.7;
+    width: 1rem;
+    height: 1rem;
+    border: solid var(--color-dark);
+    border-width: 0 3px 3px 0;
 }
 
 .carousel-control-prev-icon::after {
     transform: rotate(135deg);
-    margin-left: -10px;
 }
 
 .carousel-control-next-icon::after {
     transform: rotate(-45deg);
-    margin-right: -10px;
 }
 
-/* Taille du carousel */
+/* Suppression des hauteurs fixes du carrousel */
 .carousel,
 .carousel-inner {
-    height: 350px;
+    height: auto;
 }
 
-@media (max-width: 575.98px) {
-    .carousel,
-    .carousel-inner {
-        height: 220px;
-    }
+/* Marges pour les items du carrousel */
+.carousel-item {
+    padding: 15px;
 }
 
-/* Personnalisation des contrôles personnalisés */
-.custom-control-input:checked ~ .custom-control-label::before {
-    background-color: var(--color-secondary) !important;
-    opacity: 0.9;
-    border-color: var(--color-secondary);
-}
-
-.custom-control-input:checked ~ .custom-control-label::after {
-    background-color: var(--color-white) !important;
-}
-
-.custom-control-input:not(:checked) ~ .custom-control-label::before {
-    background-color: var(--color-grey);
-    opacity: 0.5;
-    border-color: var(--color-grey);
-}
-
-.custom-control-input:focus ~ .custom-control-label::before {
-    box-shadow: 0 0 0 1px var(--color-background), 0 0 0 3px var(--color-secondary);
-}
-
-/* 6. Header Personnalisée */
+/* 9. Header Personnalisé */
 .eden-green {
     background-color: var(--color-secondary) !important;
 }
 
-/* 7. Responsive Design */
+/* 10. Responsive Design */
+/* Supprimé : media queries pour .pc-display et .phone-display */
 
-/* Petits écrans (max-width: 991.98px) */
-@media (max-width: 991.98px) {
-    .row {
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-    }
-
-    .col-3,
-    .col-6 {
-        min-width: 100% !important;
-    }
-
-    .pc-display {
-        display: none !important;
-    }
-
-    .phone-display {
-        display: block !important;
-    }
+/* 11. Styles Spécifiques aux Graphiques */
+.plot-container {
+    width: 100%;
+    height: 300px; /* Ajustez cette valeur selon vos besoins */
 }
 
-/* Écrans moyens et petits (max-width: 575.98px) */
-@media (max-width: 575.98px) {
-    .carousel {
-        height: 220px;
-    }
-
-    .carousel-inner {
-        height: 220px;
-    }
+/* Ajustements pour les graphiques dans les cartes */
+.card-body .plot-container {
+    height: 300px; /* Hauteur des graphiques dans les cartes */
 }
 
-/* Grands écrans (min-width: 991.98px) */
-@media (min-width: 991.98px) {
-    .pc-display {
-        display: block !important;
-    }
+/* 12. Styles Additionnels pour le Carrousel sur Mobile */
+.carousel-item {
+    /* S'assure que les items prennent toute la largeur */
+    width: 100%;
+}
 
-    .phone-display {
-        display: none !important;
-    }
+.carousel-item .card {
+    /* S'assure que les cartes à l'intérieur du carrousel occupent toute la hauteur */
+    height: 100%;
+}
+
+.carousel-control-prev i,
+.carousel-control-next i {
+    font-size: 2rem; /* Taille des icônes */
+    color: var(--color-dark); /* Couleur des icônes */
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    /* Dimensions des contrôles */
+    width: 3rem;
+    height: 3rem;
+}
+
+/* 13. Styles pour les textes */
+.card-text {
+    color: var(--color-dark);
 }

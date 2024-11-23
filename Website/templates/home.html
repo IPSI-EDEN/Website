@@ -1,188 +1,151 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block content %}
+<div class="container-fluid">
 
-<div class="padding-10">
-
-    <!-- Section PC -->
-    <div class="pc-display">
-        <div class="row padding-10">
-            {% for gauge in gauges %}
-            <div class="col-3 align-center">
-                <h2>{{ gauge.title }}</h2>
-                <div id="{{ gauge.id }}"></div>
-                <script>
-                    var {{ gauge.id }} = {{ gauge.json|safe }};
-                    Plotly.newPlot('{{ gauge.id }}', {{ gauge.id }}.data, {{ gauge.id }}.layout);
-                </script>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="row padding-10">
-            {% for chart in charts_top %}
-            <div class="col-6 align-center">
-                <h2>{{ chart.title }}</h2>
-                <div id="{{ chart.id }}"></div>
-                <script>
-                    var {{ chart.id }} = {{ chart.json|safe }};
-                    Plotly.newPlot('{{ chart.id }}', {{ chart.id }}.data, {{ chart.id }}.layout);
-                </script>
-            </div>
-            {% endfor %}
-            <!-- Pompe et Fenêtre (statut) -->
-            <div class="col-3 align-center">
-                <h2>Pompe</h2>
-                <span id="pump-status" class="status"></span>
-            </div>
-            <div class="col-3 align-center">
-                <h2>Fenêtre</h2>
-                <span id="window-status" class="status"></span>
+    <!-- Section des jauges -->
+    <div class="row">
+        <!-- Affichage pour les écrans larges -->
+        <div class="col-12 d-none d-md-block">
+            <div class="row">
+                {% for gauge in gauges %}
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ gauge.title }}</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="{{ gauge.id }}" class="plot-container"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
 
-        <div class="row padding-10">
-            {% for chart in charts_middle %}
-            <div class="col-6 align-center">
-                <h2>{{ chart.title }}</h2>
-                <div id="{{ chart.id }}"></div>
-                <script>
-                    var {{ chart.id }} = {{ chart.json|safe }};
-                    Plotly.newPlot('{{ chart.id }}', {{ chart.id }}.data, {{ chart.id }}.layout);
-                </script>
+        <!-- Carrousel pour les écrans mobiles -->
+        <div class="col-12 d-block d-md-none">
+            <div id="gaugeCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for gauge in gauges %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="card h-100 text-center">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">{{ gauge.title }}</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="{{ gauge.id }}-mobile" class="plot-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#gaugeCarousel" data-bs-slide="prev">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    <span class="visually-hidden">Précédent</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#gaugeCarousel" data-bs-slide="next">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span class="visually-hidden">Suivant</span>
+                </button>
             </div>
-            {% endfor %}
-        </div>
-
-        <div class="row padding-10">
-            {% for chart in charts_bottom %}
-            <div class="col-6 align-center">
-                <h2>{{ chart.title }}</h2>
-                <div id="{{ chart.id }}"></div>
-                <script>
-                    var {{ chart.id }} = {{ chart.json|safe }};
-                    Plotly.newPlot('{{ chart.id }}', {{ chart.id }}.data, {{ chart.id }}.layout);
-                </script>
-            </div>
-            {% endfor %}
         </div>
     </div>
 
-    <!-- Section Téléphone -->
-    <div class="phone-display">
-        <!-- Carrousel des jauges -->
-        <div id="gaugesCarousel" class="carousel slide padding-10 auto-height" data-ride="carousel">
-            <div class="carousel-inner auto-height">
-                {% for gauge in gauges %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %} align-center">
-                    <h2>{{ gauge.title }}</h2>
-                    <div id="{{ gauge.id }}Carousel"></div>
-                    <script>
-                        var {{ gauge.id }}Carousel = {{ gauge.json|safe }};
-                        Plotly.newPlot('{{ gauge.id }}Carousel', {{ gauge.id }}Carousel.data, {{ gauge.id }}Carousel.layout);
-                    </script>
-                </div>
-                {% endfor %}
-            </div>
-            <a class="carousel-control-prev" href="#gaugesCarousel" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            </a>
-            <a class="carousel-control-next" href="#gaugesCarousel" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            </a>
-        </div>
-
-        <div class="horizontal-line"></div>
-
-        <!-- Carrousel des contrôles -->
-        <div id="controlsCarousel" class="carousel slide padding-10" data-ride="carousel">
-            <div class="carousel-inner">
-                <!-- Température Chart -->
-                <div class="carousel-item active align-center">
-                    <h2>Température</h2>
-                    <div id="temperatureChartCarousel"></div>
-                    <script>
-                        var temperatureChartCarousel = {{ charts_top.0.json|safe }};
-                        Plotly.newPlot('temperatureChartCarousel', temperatureChartCarousel.data, temperatureChartCarousel.layout);
-                    </script>
-                </div>
-
-                <!-- Pompe -->
-                <div class="carousel-item align-center">
-                    <h2>Pompe</h2>
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="pumpSwitchCarousel">
-                        <label class="custom-control-label" for="pumpSwitchCarousel">Pompe éteinte</label>
+    <!-- Section des graphiques -->
+    <div class="row">
+        <!-- Affichage pour les écrans larges -->
+        <div class="col-12 d-none d-md-block">
+            <div class="row">
+                {% for chart in charts %}
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ chart.title }}</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="{{ chart.id }}" class="plot-container"></div>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
+            </div>
+        </div>
 
-                <!-- Fenêtre -->
-                <div class="carousel-item align-center">
-                    <h2>Fenêtre</h2>
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="windowSwitchCarousel">
-                        <label class="custom-control-label" for="windowSwitchCarousel">Fenêtre fermée</label>
+        <!-- Carrousel pour les écrans mobiles -->
+        <div class="col-12 d-block d-md-none">
+            <div id="chartCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for chart in charts %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="card h-100 text-center">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">{{ chart.title }}</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="{{ chart.id }}-mobile" class="plot-container"></div>
+                            </div>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#chartCarousel" data-bs-slide="prev">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    <span class="visually-hidden">Précédent</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#chartCarousel" data-bs-slide="next">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span class="visually-hidden">Suivant</span>
+                </button>
             </div>
-            <a class="carousel-control-prev" href="#controlsCarousel" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            </a>
-            <a class="carousel-control-next" href="#controlsCarousel" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            </a>
         </div>
-
-        <div class="horizontal-line"></div>
-
-        <!-- Carrousel des graphiques de données -->
-        <div id="waterCarousel" class="carousel slide padding-10" data-ride="carousel">
-            <div class="carousel-inner">
-                {% for chart in water_charts %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %} align-center">
-                    <h2>{{ chart.title }}</h2>
-                    <div id="{{ chart.id }}Carousel"></div>
-                    <script>
-                        var {{ chart.id }}Carousel = {{ chart.json|safe }};
-                        Plotly.newPlot('{{ chart.id }}Carousel', {{ chart.id }}Carousel.data, {{ chart.id }}Carousel.layout);
-                    </script>
-                </div>
-                {% endfor %}
-            </div>
-            <a class="carousel-control-prev" href="#waterCarousel" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            </a>
-            <a class="carousel-control-next" href="#waterCarousel" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            </a>
-        </div>
-
-        <div class="horizontal-line"></div>
-
-        <div id="chartsCarousel" class="carousel slide padding-10" data-ride="carousel">
-            <div class="carousel-inner">
-                {% for chart in final_charts %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %} align-center">
-                    <h2>{{ chart.title }}</h2>
-                    <div id="{{ chart.id }}Carousel"></div>
-                    <script>
-                        var {{ chart.id }}Carousel = {{ chart.json|safe }};
-                        Plotly.newPlot('{{ chart.id }}Carousel', {{ chart.id }}Carousel.data, {{ chart.id }}Carousel.layout);
-                    </script>
-                </div>
-                {% endfor %}
-            </div>
-            <a class="carousel-control-prev" href="#chartsCarousel" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            </a>
-            <a class="carousel-control-next" href="#chartsCarousel" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            </a>
-        </div>
-    </div>  
-
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% for gauge in gauges %}
+        var gaugeData = {{ gauge.json|safe }};
+        // Desktop
+        Plotly.newPlot('{{ gauge.id }}', gaugeData.data, gaugeData.layout, {responsive: true});
+        // Mobile
+        Plotly.newPlot('{{ gauge.id }}-mobile', gaugeData.data, gaugeData.layout, {responsive: true});
+        {% endfor %}
+
+        {% for chart in charts %}
+        var chartData = {{ chart.json|safe }};
+        // Desktop
+        Plotly.newPlot('{{ chart.id }}', chartData.data, chartData.layout, {responsive: true});
+        // Mobile
+        Plotly.newPlot('{{ chart.id }}-mobile', chartData.data, chartData.layout, {responsive: true});
+        {% endfor %}
+
+        function resizePlotlyGraphs(container) {
+            var plotContainers = container.querySelectorAll('.plot-container');
+            plotContainers.forEach(function(plot) {
+                Plotly.Plots.resize(plot);
+            });
+        }
+        
+        var gaugeCarousel = document.getElementById('gaugeCarousel');
+        var chartCarousel = document.getElementById('chartCarousel');
+
+        gaugeCarousel.addEventListener('slide.bs.carousel', function (event) {
+            var nextSlide = event.relatedTarget;
+            resizePlotlyGraphs(nextSlide);
+        });
+
+        chartCarousel.addEventListener('slide.bs.carousel', function (event) {
+            var nextSlide = event.relatedTarget;
+            resizePlotlyGraphs(nextSlide);
+        });
+
+        var initialGaugeActive = gaugeCarousel.querySelector('.carousel-item.active');
+        var initialChartActive = chartCarousel.querySelector('.carousel-item.active');
+        resizePlotlyGraphs(initialGaugeActive);
+        resizePlotlyGraphs(initialChartActive);
+    });
+</script>
 
 {% endblock %}

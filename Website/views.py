@@ -42,112 +42,103 @@ def home_page(request):
     temperature_data = [22, 23, 21, 24, 25]
     humidity_data = [55, 60, 58, 62, 59]
     moist_data = [40, 42, 38, 45, 43]
-    water_level = [80]  # Par exemple, niveau d'eau actuel
+    water_level = [80]  # Niveau d'eau actuel
     voltage_data = [220, 221, 219, 222, 223]
     power_data = [100, 105, 102, 110, 108]
     time_labels = ['08:00', '10:00', '12:00', '14:00', '16:00']
 
-    # Créer des graphiques de ligne avec Plotly Express
-    temperature_chart = px.line(
-        x=time_labels, y=temperature_data,
-        labels={'x': 'Heure', 'y': 'Température (°C)'},
-        title='Température au fil du temps'
+    # Définir la palette de couleurs
+    colors = {
+        'primary': '#0d6efd',
+        'secondary': '#6c757d',
+        'success': '#198754',
+        'danger': '#dc3545',
+        'warning': '#ffc107',
+        'info': '#0dcaf0',
+        'light': '#f8f9fa',
+        'dark': '#212529',
+    }
+
+    # Créer un template Plotly personnalisé
+    custom_template = go.layout.Template(
+        layout=go.Layout(
+            font=dict(family="Arial, sans-serif", size=12, color=colors['dark']),
+            paper_bgcolor=colors['light'],
+            plot_bgcolor=colors['light'],
+            colorway=[colors['primary'], colors['secondary'], colors['success'], colors['danger']],
+            xaxis=dict(gridcolor=colors['secondary']),
+            yaxis=dict(gridcolor=colors['secondary']),
+            title=dict(x=0.5),
+            margin=dict(l=10, r=10, t=50, b=50),
+        )
     )
-    humidity_chart = px.line(
-        x=time_labels, y=humidity_data,
-        labels={'x': 'Heure', 'y': 'Humidité (%)'},
-        title='Humidité au fil du temps'
-    )
-    moist_chart = px.line(
-        x=time_labels, y=moist_data,
-        labels={'x': 'Heure', 'y': 'Humidité du sol (%)'},
-        title='Humidité du sol au fil du temps'
-    )
-    voltage_chart = px.line(
-        x=time_labels, y=voltage_data,
-        labels={'x': 'Heure', 'y': 'Tension (V)'},
-        title='Tension consommée au fil du temps'
-    )
-    power_chart = px.line(
-        x=time_labels, y=power_data,
-        labels={'x': 'Heure', 'y': 'Puissance (W)'},
-        title='Puissance reçue au fil du temps'
-    )
 
-    # Convertir les graphiques en JSON
-    temperature_chart_json = json.dumps(temperature_chart, cls=plotly.utils.PlotlyJSONEncoder)
-    humidity_chart_json = json.dumps(humidity_chart, cls=plotly.utils.PlotlyJSONEncoder)
-    moist_chart_json = json.dumps(moist_chart, cls=plotly.utils.PlotlyJSONEncoder)
-    voltage_chart_json = json.dumps(voltage_chart, cls=plotly.utils.PlotlyJSONEncoder)
-    power_chart_json = json.dumps(power_chart, cls=plotly.utils.PlotlyJSONEncoder)
-
-    # Créer des jauges avec Plotly Graph Objects
-    temperature_gauge = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=temperature_data[-1],
-        title={'text': "Température actuelle"},
-        gauge={'axis': {'range': [0, 50]}}
-    ))
-    temperature_gauge_json = json.dumps(temperature_gauge, cls=plotly.utils.PlotlyJSONEncoder)
-
-    humidity_gauge = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=humidity_data[-1],
-        title={'text': "Humidité actuelle"},
-        gauge={'axis': {'range': [0, 100]}}
-    ))
-    humidity_gauge_json = json.dumps(humidity_gauge, cls=plotly.utils.PlotlyJSONEncoder)
-
-    moist_gauge = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=moist_data[-1],
-        title={'text': "Humidité du sol actuelle"},
-        gauge={'axis': {'range': [0, 100]}}
-    ))
-    moist_gauge_json = json.dumps(moist_gauge, cls=plotly.utils.PlotlyJSONEncoder)
-
-    water_level_gauge = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=water_level[-1],
-        title={'text': "Niveau d'eau dans la cuve"},
-        gauge={'axis': {'range': [0, 100]}}
-    ))
-    water_level_gauge_json = json.dumps(water_level_gauge, cls=plotly.utils.PlotlyJSONEncoder)
-
-    # Préparer les contextes pour les jauges
-    gauges = [
-        {'title': 'Température', 'id': 'temperatureGauge', 'json': temperature_gauge_json},
-        {'title': 'Humidité', 'id': 'humidityGauge', 'json': humidity_gauge_json},
-        {'title': 'Humidité du sol', 'id': 'moistGauge', 'json': moist_gauge_json},
-        {'title': "Niveau d'eau dans la cuve", 'id': 'waterLevelGauge', 'json': water_level_gauge_json},
+    # Créer les graphiques
+    charts = []
+    data_list = [
+        {'data': temperature_data, 'title': 'Température au fil du temps', 'y_label': 'Température (°C)', 'id': 'temperatureChart', 'color': colors['primary']},
+        {'data': humidity_data, 'title': 'Humidité au fil du temps', 'y_label': 'Humidité (%)', 'id': 'humidityChart', 'color': colors['info']},
+        {'data': moist_data, 'title': 'Humidité du sol au fil du temps', 'y_label': 'Humidité du sol (%)', 'id': 'moistChart', 'color': colors['success']},
+        {'data': voltage_data, 'title': 'Tension consommée au fil du temps', 'y_label': 'Tension (V)', 'id': 'voltageChart', 'color': colors['warning']},
+        {'data': power_data, 'title': 'Puissance reçue au fil du temps', 'y_label': 'Puissance (W)', 'id': 'powerChart', 'color': colors['danger']},
     ]
 
-    # Préparer les contextes pour les graphiques
-    charts_top = [
-        {'title': 'Température', 'id': 'temperatureChart', 'json': temperature_chart_json},
+    for item in data_list:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=time_labels,
+            y=item['data'],
+            mode='lines+markers',
+            line=dict(color=item['color'], width=3),
+            marker=dict(size=6)
+        ))
+        fig.update_layout(
+            # Retirer le titre du graphique
+            # title=item['title'],
+            xaxis_title='Heure',
+            yaxis_title=item['y_label'],
+            template=custom_template,
+            autosize=True,
+        )
+        fig.update_layout(margin=dict(l=40, r=40, t=40, b=40))
+        fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        charts.append({'title': item['title'], 'id': item['id'], 'json': fig_json})
+
+    # Créer les jauges
+    gauges = []
+    gauge_data = [
+        {'value': temperature_data[-1], 'title': 'Température actuelle', 'id': 'temperatureGauge', 'range': [0, 50], 'color': colors['primary']},
+        {'value': humidity_data[-1], 'title': 'Humidité actuelle', 'id': 'humidityGauge', 'range': [0, 100], 'color': colors['info']},
+        {'value': moist_data[-1], 'title': 'Humidité du sol actuelle', 'id': 'moistGauge', 'range': [0, 100], 'color': colors['success']},
+        {'value': water_level[-1], 'title': "Niveau d'eau dans la cuve", 'id': 'waterLevelGauge', 'range': [0, 100], 'color': colors['warning']},
     ]
 
-    charts_middle = [
-        {'title': 'Humidité', 'id': 'humidityChart', 'json': humidity_chart_json},
-        {'title': 'Humidité du sol', 'id': 'moistChart', 'json': moist_chart_json},
-    ]
-
-    charts_bottom = [
-        {'title': 'Puissance consommée', 'id': 'voltageChart', 'json': voltage_chart_json},
-        {'title': 'Puissance reçue', 'id': 'powerChart', 'json': power_chart_json},
-    ]
-
-    water_charts = charts_middle  # Réutilisation pour l'affichage mobile
-
-    final_charts = charts_bottom  # Réutilisation pour l'affichage mobile
+    for gauge in gauge_data:
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=gauge['value'],
+            # Retirer le titre de la jauge
+            # title={'text': gauge['title'], 'font': {'size': 14}},
+            gauge={
+                'axis': {'range': gauge['range'], 'tickwidth': 1, 'tickcolor': colors['dark']},
+                'bar': {'color': gauge['color']},
+                'bgcolor': colors['light'],
+                'borderwidth': 1,
+                'bordercolor': colors['secondary'],
+            },
+        ))
+        fig.update_layout(
+            font=dict(family="Arial, sans-serif", size=12, color=colors['dark']),
+            paper_bgcolor=colors['light'],
+            autosize=True,
+            margin=dict(l=10, r=10, t=40, b=10),
+        )
+        fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        gauges.append({'title': gauge['title'], 'id': gauge['id'], 'json': fig_json})
 
     context = {
         'gauges': gauges,
-        'charts_top': charts_top,
-        'charts_middle': charts_middle,
-        'charts_bottom': charts_bottom,
-        'water_charts': water_charts,
-        'final_charts': final_charts,
+        'charts': charts,
     }
 
     return render(request, 'home.html', context)
