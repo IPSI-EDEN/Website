@@ -1,4 +1,5 @@
 Django
+Pillow
 gunicorn
 pandas
 plotly
