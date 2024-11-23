@@ -1,5 +1,6 @@
 Django
 gunicorn
+pandas
 plotly
 psycopg
 psycopg2-binary

@@ -4,162 +4,185 @@
 
 {% block content %}
 
-<div class="container-fluid padding-10 pc-display">
-	<div class="row padding-10">
-		<div class="col-3 align-center">
-			<h2>Température</h2>
-			<canvas id="temperatureGauge"></canvas>
-		</div>
-		
-		<div class="col-3 align-center">
-			<h2>Humidité</h2>
-			<canvas id="humidityGauge"></canvas>
-		</div>
-		
-		<div class="col-3 align-center">
-			<h2>Humidité du sol</h2>
-			<canvas id="moistGauge"></canvas>
-		</div>
-		
-		<div class="col-3 align-center">
-			<h2>Niveau d'eau dans la cuve</h2>
-			<canvas id="waterLevelChart"></canvas>
-		</div>
-	</div>
-		
-	<div class="row padding-10">
-		<div class="col-6 align-center">
-			<h2>Température</h2>
-			<canvas id="temperatureChart"></canvas>
-		</div>
-		<div class="col-3 align-center">
-			<h2>Pompe</h2>
-			<span id="pump-status" class="status"></span>
-		</div>
-		<div class="col-3 align-center">
-			<h2>Fenêtre</h2>
-			<span id="window-status" class="status"></span>
-		</div>
-	</div>
-	
-	<div class="row padding-10">
-		<div class="col-6 align-center">
-			<h2>Humidité</h2>
-			<canvas id="humidityChart"></canvas>
-		</div>
+<div class="padding-10">
 
-		<div class="col-6 align-center">
-			<h2>Humidité du sol</h2>
-			<canvas id="moistChart"></canvas>
-		</div>
-	</div>
+    <!-- Section PC -->
+    <div class="pc-display">
+        <div class="row padding-10">
+            {% for gauge in gauges %}
+            <div class="col-3 align-center">
+                <h2>{{ gauge.title }}</h2>
+                <div id="{{ gauge.id }}"></div>
+                <script>
+                    var {{ gauge.id }} = {{ gauge.json|safe }};
+                    Plotly.newPlot('{{ gauge.id }}', {{ gauge.id }}.data, {{ gauge.id }}.layout);
+                </script>
+            </div>
+            {% endfor %}
+        </div>
 
-	<div class="row padding-10">
-		<div class="col-6 align-center">
-			<h2>Puissance consommée</h2>
-			<canvas id="voltageChart"></canvas>
-		</div>
-		
-		<div class="col-6 align-center">
-			<h2>Puissance reçue</h2>
-			<canvas id="powerChart"></canvas>
-		</div>
-	</div>
+        <div class="row padding-10">
+            {% for chart in charts_top %}
+            <div class="col-6 align-center">
+                <h2>{{ chart.title }}</h2>
+                <div id="{{ chart.id }}"></div>
+                <script>
+                    var {{ chart.id }} = {{ chart.json|safe }};
+                    Plotly.newPlot('{{ chart.id }}', {{ chart.id }}.data, {{ chart.id }}.layout);
+                </script>
+            </div>
+            {% endfor %}
+            <!-- Pompe et Fenêtre (statut) -->
+            <div class="col-3 align-center">
+                <h2>Pompe</h2>
+                <span id="pump-status" class="status"></span>
+            </div>
+            <div class="col-3 align-center">
+                <h2>Fenêtre</h2>
+                <span id="window-status" class="status"></span>
+            </div>
+        </div>
+
+        <div class="row padding-10">
+            {% for chart in charts_middle %}
+            <div class="col-6 align-center">
+                <h2>{{ chart.title }}</h2>
+                <div id="{{ chart.id }}"></div>
+                <script>
+                    var {{ chart.id }} = {{ chart.json|safe }};
+                    Plotly.newPlot('{{ chart.id }}', {{ chart.id }}.data, {{ chart.id }}.layout);
+                </script>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="row padding-10">
+            {% for chart in charts_bottom %}
+            <div class="col-6 align-center">
+                <h2>{{ chart.title }}</h2>
+                <div id="{{ chart.id }}"></div>
+                <script>
+                    var {{ chart.id }} = {{ chart.json|safe }};
+                    Plotly.newPlot('{{ chart.id }}', {{ chart.id }}.data, {{ chart.id }}.layout);
+                </script>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section Téléphone -->
+    <div class="phone-display">
+        <!-- Carrousel des jauges -->
+        <div id="gaugesCarousel" class="carousel slide padding-10 auto-height" data-ride="carousel">
+            <div class="carousel-inner auto-height">
+                {% for gauge in gauges %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %} align-center">
+                    <h2>{{ gauge.title }}</h2>
+                    <div id="{{ gauge.id }}Carousel"></div>
+                    <script>
+                        var {{ gauge.id }}Carousel = {{ gauge.json|safe }};
+                        Plotly.newPlot('{{ gauge.id }}Carousel', {{ gauge.id }}Carousel.data, {{ gauge.id }}Carousel.layout);
+                    </script>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#gaugesCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#gaugesCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div class="horizontal-line"></div>
+
+        <!-- Carrousel des contrôles -->
+        <div id="controlsCarousel" class="carousel slide padding-10" data-ride="carousel">
+            <div class="carousel-inner">
+                <!-- Température Chart -->
+                <div class="carousel-item active align-center">
+                    <h2>Température</h2>
+                    <div id="temperatureChartCarousel"></div>
+                    <script>
+                        var temperatureChartCarousel = {{ charts_top.0.json|safe }};
+                        Plotly.newPlot('temperatureChartCarousel', temperatureChartCarousel.data, temperatureChartCarousel.layout);
+                    </script>
+                </div>
+
+                <!-- Pompe -->
+                <div class="carousel-item align-center">
+                    <h2>Pompe</h2>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="pumpSwitchCarousel">
+                        <label class="custom-control-label" for="pumpSwitchCarousel">Pompe éteinte</label>
+                    </div>
+                </div>
+
+                <!-- Fenêtre -->
+                <div class="carousel-item align-center">
+                    <h2>Fenêtre</h2>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="windowSwitchCarousel">
+                        <label class="custom-control-label" for="windowSwitchCarousel">Fenêtre fermée</label>
+                    </div>
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#controlsCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#controlsCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div class="horizontal-line"></div>
+
+        <!-- Carrousel des graphiques de données -->
+        <div id="waterCarousel" class="carousel slide padding-10" data-ride="carousel">
+            <div class="carousel-inner">
+                {% for chart in water_charts %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %} align-center">
+                    <h2>{{ chart.title }}</h2>
+                    <div id="{{ chart.id }}Carousel"></div>
+                    <script>
+                        var {{ chart.id }}Carousel = {{ chart.json|safe }};
+                        Plotly.newPlot('{{ chart.id }}Carousel', {{ chart.id }}Carousel.data, {{ chart.id }}Carousel.layout);
+                    </script>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#waterCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#waterCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div class="horizontal-line"></div>
+
+        <div id="chartsCarousel" class="carousel slide padding-10" data-ride="carousel">
+            <div class="carousel-inner">
+                {% for chart in final_charts %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %} align-center">
+                    <h2>{{ chart.title }}</h2>
+                    <div id="{{ chart.id }}Carousel"></div>
+                    <script>
+                        var {{ chart.id }}Carousel = {{ chart.json|safe }};
+                        Plotly.newPlot('{{ chart.id }}Carousel', {{ chart.id }}Carousel.data, {{ chart.id }}Carousel.layout);
+                    </script>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#chartsCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#chartsCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>  
+
 </div>
-
-<div class="container-fluid padding-10 phone-display">
-	<div id="gaugesCarousel" class="carousel slide padding-10 auto-height" data-ride="carousel">
-	  <div class="carousel-inner auto-height">
-		<div class="carousel-item active align-center">
-		  <h2>Température</h2>
-		  <canvas id="temperatureGaugeCarousel"></canvas>
-		</div>
-		<div class="carousel-item align-center">
-		  <h2>Humidité</h2>
-		  <canvas id="humidityGaugeCarousel"></canvas>
-		</div>
-		<div class="carousel-item align-center">
-		  <h2>Humidité du sol</h2>
-		  <canvas id="moistGaugeCarousel"></canvas>
-		</div>
-		<div class="carousel-item align-center">
-		  <h2>Niveau d'eau dans la cuve</h2>
-		  <canvas id="waterLevelChartCarousel"></canvas>
-		</div>
-	  </div>
-	  <a class="carousel-control-prev" href="#gaugesCarousel" role="button" data-slide="prev">
-		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-	  </a>
-	  <a class="carousel-control-next" href="#gaugesCarousel" role="button" data-slide="next">
-		<span class="carousel-control-next-icon" aria-hidden="true"></span>
-	  </a>
-	</div>
-	<div class="horizontal-line"></div>
-	<div id="controlsCarousel" class="carousel slide padding-10" data-ride="carousel">
-	  <div class="carousel-inner">
-		<div class="carousel-item active align-center">
-		  <h2>Température</h2>
-		  <canvas id="temperatureChartCarousel"></canvas>
-		</div>
-		<div class="carousel-item align-center">
-			<h2>Pompe</h2>
-			<div class="custom-control custom-switch">
-				<input type="checkbox" class="custom-control-input" id="pumpSwitch">
-				<label class="custom-control-label" for="pumpSwitch">Pompe éteinte</label>
-			</div>
-		</div>
-		<div class="carousel-item align-center">
-			<h2>Fenêtre</h2>
-			<div class="custom-control custom-switch">
-				<input type="checkbox" class="custom-control-input" id="windowSwitch">
-				<label class="custom-control-label" for="windowSwitch">Fenêtre fermée</label>
-			</div>
-		</div>
-	  </div>
-	  <a class="carousel-control-prev" href="#controlsCarousel" role="button" data-slide="prev">
-		<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-	  </a>
-	  <a class="carousel-control-next" href="#controlsCarousel" role="button" data-slide="next">
-		<span class="carousel-control-next-icon" aria-hidden="true"></span>
-	  </a>
-	</div>
-	<div class="horizontal-line"></div>
-	<div id="waterCarousel" class="carousel slide padding-10" data-ride="carousel">
-		<div class="carousel-inner">
-		  <div class="carousel-item active align-center">
-			<h2>Humidité</h2>
-			<canvas id="humidityChartCarousel"></canvas>
-		  </div>
-		  <div class="carousel-item align-center">
-			<h2>Humidité du sol</h2>
-			<canvas id="moistChartCarousel"></canvas>
-		  </div>
-		  <a class="carousel-control-prev" href="#waterCarousel" role="button" data-slide="prev">
-			  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-		  </a>
-		  <a class="carousel-control-next" href="#waterCarousel" role="button" data-slide="next">
-			  <span class="carousel-control-next-icon" aria-hidden="true"></span>
-		  </a>
-	</div>
-	<div class="horizontal-line"></div>
-	<div id="chartsCarousel" class="carousel slide padding-10" data-ride="carousel">
-	  <div class="carousel-inner">
-		<div class="carousel-item active align-center">
-		  <h2>Puissance consommée</h2>
-		  <canvas id="voltageChartCarousel"></canvas>
-		</div>
-		<div class="carousel-item align-center">
-		  <h2>Puissance reçue</h2>
-		  <canvas id="powerChartCarousel"></canvas>
-		</div>
-		<a class="carousel-control-prev" href="#chartsCarousel" role="button" data-slide="prev">
-			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-		</a>
-		<a class="carousel-control-next" href="#chartsCarousel" role="button" data-slide="next">
-			<span class="carousel-control-next-icon" aria-hidden="true"></span>
-		</a>
-	</div>
-  </div>
-</div>  
 
 {% endblock %}

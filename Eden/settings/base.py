@@ -83,8 +83,14 @@ STATICFILES_DIRS = [
     BASE_DIR  / 'Eden/static',
 ]
 
-print('BASE_DIR:', BASE_DIR)
-print('STATICFILES_DIRS:', STATICFILES_DIRS)
+# URL de redirection après connexion réussie
+LOGIN_REDIRECT_URL = 'home'
+
+# URL de redirection après déconnexion
+LOGOUT_REDIRECT_URL = 'login'
+
+# URL de connexion par défaut
+LOGIN_URL = 'login'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

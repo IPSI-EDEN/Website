@@ -1,166 +1,204 @@
-body 
-{
-    background-color: #e5e5cc;
+/* 1. Couleurs Primaires */
+:root {
+    --color-primary: #28a745;         /* Vert principal */
+    --color-primary-hover: #218838;   /* Vert principal au survol */
+    --color-secondary: #336633;       /* Vert secondaire */
+    --color-success: #4CAF50;         /* Vert succès */
+    --color-danger: #FF5555;          /* Rouge danger */
+    --color-background: #e5e5cc;      /* Couleur de fond */
+    --color-white: #ffffff;           /* Blanc */
+    --color-grey: #adb5bd;            /* Gris */
+    --color-dark: #343a40;            /* Gris foncé */
+}
+
+/* 2. Styles Globaux */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-background);
     overflow-x: hidden;
+    font-family: Arial, sans-serif; /* Police uniforme */
 }
 
-.eden-green
-{
-	background-color: #336633;
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px; /* Ajout d'un padding global */
 }
 
-.connected
-{
-	background-color: #4CAF50;
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff; /* Fond blanc pour les cartes */
 }
 
-.disconnected
-{
-	background-color: #FF5555;
+.btn-primary,
+.btn-success {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
-.padding-10
-{
-	padding: 10px;
+.btn-primary:hover,
+.btn-success:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
 }
 
-.align-center
-{
-	text-align: center;
+.alert {
+    margin-top: 20px;
+    border-radius: 5px;
 }
 
-h2
-{
-	font-weight: bold;
+h2, h3, h4, h5, h6 {
+    font-weight: bold;
+    color: var(--color-dark);
 }
 
-.horizontal-line 
-{
-	height: 3px;
-	background-color: #336633;
-	opacity: 0.5;
-	margin-top: 20px;
-	margin-bottom: 20px;
-}
-  
-.auto-height
-{
-	height: auto !important;
+.horizontal-line {
+    height: 3px;
+    background-color: var(--color-secondary);
+    opacity: 0.5;
+    margin: 20px 0;
 }
 
-/* BOOTSTRAP CUSTOMIZATION */
+.auto-height {
+    height: auto !important;
+}
+
+/* 3. État des Connexions */
+.status-connected {
+    background-color: var(--color-success);
+}
+
+.status-disconnected {
+    background-color: var(--color-danger);
+}
+
+/* 4. Padding et Alignement */
+.padding-10 {
+    padding: 10px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* 5. Personnalisations Bootstrap */
+
+/* Personnalisation des icônes de contrôle du carousel */
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
-  background-image: none;
+    background-image: none;
 }
 
-.carousel-control-prev-icon:after,
-.carousel-control-next-icon:after {
-  content: '';
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  background: transparent;
-  border: solid #336633;
-  border-width: 0 7px 7px 0;
-  opacity: 0.7;
+.carousel-control-prev-icon::after,
+.carousel-control-next-icon::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: solid var(--color-secondary);
+    border-width: 0 7px 7px 0;
+    opacity: 0.7;
 }
 
-.carousel-control-prev-icon:after {
-  transform: rotate(135deg);
-  -webkit-transform: rotate(135deg); /* Safari */
-  margin-left: -10px;
+.carousel-control-prev-icon::after {
+    transform: rotate(135deg);
+    margin-left: -10px;
 }
 
-.carousel-control-next-icon:after {
-  transform: rotate(-45deg);
-  -webkit-transform: rotate(-45deg); /* Safari */
-  margin-right: -10px;
+.carousel-control-next-icon::after {
+    transform: rotate(-45deg);
+    margin-right: -10px;
 }
 
-.carousel {
-	height: 350px;
+/* Taille du carousel */
+.carousel,
+.carousel-inner {
+    height: 350px;
 }
 
-.carousel-inner
-{
-	height: 350px;
+@media (max-width: 575.98px) {
+    .carousel,
+    .carousel-inner {
+        height: 220px;
+    }
 }
 
-.custom-control-input:checked ~ .custom-control-label::before 
-{
-	background-color: #336633 !important;
-	opacity: 0.9;
-	border-color: #336633;
-}
-  
-.custom-control-input:checked ~ .custom-control-label::after 
-{
-	background-color: #ffffff !important;
+/* Personnalisation des contrôles personnalisés */
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--color-secondary) !important;
+    opacity: 0.9;
+    border-color: var(--color-secondary);
 }
 
-.custom-control-input:not(:checked) ~ .custom-control-label::before 
-{
-	background-color: #adb5bd;
-	opacity: 0.5;
-	border-color: #adb5bd;
+.custom-control-input:checked ~ .custom-control-label::after {
+    background-color: var(--color-white) !important;
 }
 
-.custom-control-input:focus ~ .custom-control-label::before 
-{
-	box-shadow: 0 0 0 1px #e5e5cc, 0 0 0 3px #336633;
+.custom-control-input:not(:checked) ~ .custom-control-label::before {
+    background-color: var(--color-grey);
+    opacity: 0.5;
+    border-color: var(--color-grey);
 }
-/* END OF BOOTSTRAP CUSTOMIZATION */
 
-/* Viewing on small screen */
-@media (max-width: 991.98px) 
-{
-    .row 
-	{
+.custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 1px var(--color-background), 0 0 0 3px var(--color-secondary);
+}
+
+/* 6. Header Personnalisée */
+.eden-green {
+    background-color: var(--color-secondary) !important;
+}
+
+/* 7. Responsive Design */
+
+/* Petits écrans (max-width: 991.98px) */
+@media (max-width: 991.98px) {
+    .row {
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
     }
 
-	.col-3, .col-6
-	{
-		min-width: 100% !important;
-	}
+    .col-3,
+    .col-6 {
+        min-width: 100% !important;
+    }
 
-	.pc-display
-	{
-		display: none !important;
-	}
+    .pc-display {
+        display: none !important;
+    }
 
-	.phone-display
-	{
-		display: block !important;
-	}
+    .phone-display {
+        display: block !important;
+    }
 }
 
-/* Viewing on really small screen */
-@media (max-width: 575.98px) 
-{
-	.carousel
-	{
-		height: 220px;
-	}
+/* Écrans moyens et petits (max-width: 575.98px) */
+@media (max-width: 575.98px) {
+    .carousel {
+        height: 220px;
+    }
 
-	.carousel-inner
-	{
-		height: 220px;
-	}
+    .carousel-inner {
+        height: 220px;
+    }
 }
 
-/* Viewing on large screen */
-@media (min-width: 991.98px)
-{
-	.pc-display
-	{
-		display: block !important;
-	}
+/* Grands écrans (min-width: 991.98px) */
+@media (min-width: 991.98px) {
+    .pc-display {
+        display: block !important;
+    }
 
-	.phone-display
-	{
-		display: none !important;
-	}
+    .phone-display {
+        display: none !important;
+    }
 }
