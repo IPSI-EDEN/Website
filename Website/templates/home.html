@@ -1,151 +1,43 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
-<div class="container-fluid">
+<div class="container mt-5">
 
-    <!-- Section des jauges -->
-    <div class="row">
-        <!-- Affichage pour les écrans larges -->
-        <div class="col-12 d-none d-md-block">
-            <div class="row">
-                {% for gauge in gauges %}
-                <div class="col-12 col-md-6 col-lg-3 mb-4">
-                    <div class="card h-100 text-center">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">{{ gauge.title }}</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div id="{{ gauge.id }}" class="plot-container"></div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Carrousel pour les écrans mobiles -->
-        <div class="col-12 d-block d-md-none">
-            <div id="gaugeCarousel" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    {% for gauge in gauges %}
-                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <div class="card h-100 text-center">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">{{ gauge.title }}</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <div id="{{ gauge.id }}-mobile" class="plot-container"></div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#gaugeCarousel" data-bs-slide="prev">
-                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                    <span class="visually-hidden">Précédent</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#gaugeCarousel" data-bs-slide="next">
-                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                    <span class="visually-hidden">Suivant</span>
-                </button>
-            </div>
-        </div>
+    <div class="text-center mb-4">
+        <h1 class="display-4">Dashboard</h1>
+        <p class="lead text-muted">Suivez en temps réel l'état et les informations de vos serres</p>
+        <hr class="w-25 mx-auto">
     </div>
 
-    <!-- Section des graphiques -->
-    <div class="row">
-        <!-- Affichage pour les écrans larges -->
-        <div class="col-12 d-none d-md-block">
-            <div class="row">
-                {% for chart in charts %}
-                <div class="col-12 col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">{{ chart.title }}</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div id="{{ chart.id }}" class="plot-container"></div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
         </div>
+    {% endif %}
 
-        <!-- Carrousel pour les écrans mobiles -->
-        <div class="col-12 d-block d-md-none">
-            <div id="chartCarousel" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    {% for chart in charts %}
-                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <div class="card h-100 text-center">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">{{ chart.title }}</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <div id="{{ chart.id }}-mobile" class="plot-container"></div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+    <div class="row">
+        {% for raspberry in raspberry_status %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm hover-effect">
+                <div class="card-header text-white {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
+                    <h5 class="mb-0">{{ raspberry.device_id }}</h5>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#chartCarousel" data-bs-slide="prev">
-                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                    <span class="visually-hidden">Précédent</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#chartCarousel" data-bs-slide="next">
-                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                    <span class="visually-hidden">Suivant</span>
-                </button>
+                <div class="card-body">
+                    <p class="text-muted"><strong>Groupe :</strong> {{ raspberry.group }}</p>
+                    <p class="text-muted"><strong>Emplacement :</strong> {{ raspberry.location }}</p>
+                    <p class="text-muted"><strong>Dernière donnée :</strong> {{ raspberry.last_data }}</p>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <span class="badge {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ raspberry.status }}
+                    </span>
+                    <a href="{% url 'raspberry_detail' raspberry.id %}" class="btn btn-outline-primary btn-sm">
+                        Détails
+                    </a>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
+
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        {% for gauge in gauges %}
-        var gaugeData = {{ gauge.json|safe }};
-        // Desktop
-        Plotly.newPlot('{{ gauge.id }}', gaugeData.data, gaugeData.layout, {responsive: true});
-        // Mobile
-        Plotly.newPlot('{{ gauge.id }}-mobile', gaugeData.data, gaugeData.layout, {responsive: true});
-        {% endfor %}
-
-        {% for chart in charts %}
-        var chartData = {{ chart.json|safe }};
-        // Desktop
-        Plotly.newPlot('{{ chart.id }}', chartData.data, chartData.layout, {responsive: true});
-        // Mobile
-        Plotly.newPlot('{{ chart.id }}-mobile', chartData.data, chartData.layout, {responsive: true});
-        {% endfor %}
-
-        function resizePlotlyGraphs(container) {
-            var plotContainers = container.querySelectorAll('.plot-container');
-            plotContainers.forEach(function(plot) {
-                Plotly.Plots.resize(plot);
-            });
-        }
-        
-        var gaugeCarousel = document.getElementById('gaugeCarousel');
-        var chartCarousel = document.getElementById('chartCarousel');
-
-        gaugeCarousel.addEventListener('slide.bs.carousel', function (event) {
-            var nextSlide = event.relatedTarget;
-            resizePlotlyGraphs(nextSlide);
-        });
-
-        chartCarousel.addEventListener('slide.bs.carousel', function (event) {
-            var nextSlide = event.relatedTarget;
-            resizePlotlyGraphs(nextSlide);
-        });
-
-        var initialGaugeActive = gaugeCarousel.querySelector('.carousel-item.active');
-        var initialChartActive = chartCarousel.querySelector('.carousel-item.active');
-        resizePlotlyGraphs(initialGaugeActive);
-        resizePlotlyGraphs(initialChartActive);
-    });
-</script>
-
 {% endblock %}
