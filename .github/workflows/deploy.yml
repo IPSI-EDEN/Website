@@ -73,6 +73,7 @@ jobs:
             -e DB_PORT="5432" \
             -e DB_SSLMODE=disable \
             -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
+            -e AES_SECRET_KEY="${{ secrets.AES_SECRET_KEY }}" \
             -e DJANGO_ENV="production" \
             django-app
           

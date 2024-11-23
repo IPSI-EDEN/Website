@@ -4,3 +4,7 @@ pandas
 plotly
 psycopg
 psycopg2-binary
+channels
+djangorestframework
+cryptography
+channels-redis

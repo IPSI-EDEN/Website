@@ -1,10 +1,35 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:6.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: daphne -b 0.0.0.0 -p 8000 Eden.asgi:application
     volumes:
-      - /opt/eden:/app 
+      - /opt/eden:/app
+    expose:
+      - "8000"
+    depends_on:
+      - redis
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
     ports:
-      - "8000:8000"
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certs:/etc/nginx/certs
+    depends_on:
+      - web
+
+volumes:
+  redis-data:

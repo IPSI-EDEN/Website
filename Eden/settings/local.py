@@ -1,4 +1,5 @@
 from .base import *
+from dotenv import load_dotenv
 
 DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
@@ -9,3 +10,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+load_dotenv()
+AES_SECRET_KEY = bytes.fromhex(os.getenv('AES_SECRET_KEY'))

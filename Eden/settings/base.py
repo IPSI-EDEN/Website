@@ -15,6 +15,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
+    'rest_framework',
     'Website',
 ]
 
@@ -47,6 +49,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Eden.wsgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis', 6379)],
+        },
+    },
+}
 
 DATABASES = {
     'default': {
