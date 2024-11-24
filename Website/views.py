@@ -22,6 +22,7 @@ from .serializers import SensorDataSerializer
 from django.db import transaction
 
 from Website.models import *
+from Website.forms import *
 
 def handler404(request, exception):
     return redirect('login')
@@ -200,10 +201,37 @@ def graph_page(request, id):
         'selected_time_range': selected_time_range
     })
 
+@user_passes_test(is_admin)
+@login_required(login_url='login')
+def raspberry_update(request, id):
+    # Récupérer le Raspberry
+    raspberry = get_object_or_404(Raspberry, id=id)
+
+    if request.method == 'POST':
+        form = RaspberryForm(request.POST, instance=raspberry)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = RaspberryForm(instance=raspberry)
+
+    return render(request, 'raspberry_form.html', {
+        'form': form,
+        'raspberry': raspberry,
+        'action': 'Modifier'
+    })
+
+@user_passes_test(is_admin)
+@login_required(login_url='login')
+def raspberry_delete(request, id):
+    # Récupérer le Raspberry
+    raspberry = get_object_or_404(Raspberry, id=id)
+    raspberry.delete()
+    return redirect('home')
+    
 
 @require_POST
 @api_view(['POST'])
-@permission_classes([AllowAny])  # Autoriser les requêtes non authentifiées pour les tests
 def receive_sensor_data(request):
     try:
         # Récupérer les données chiffrées

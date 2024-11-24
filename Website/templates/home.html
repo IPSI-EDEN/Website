@@ -2,42 +2,57 @@
 {% block content %}
 <div class="container mt-5">
 
-    <div class="text-center mb-4">
-        <h1 class="display-4">Dashboard</h1>
-        <p class="lead text-muted">Suivez en temps réel l'état et les informations de vos serres</p>
-        <hr class="w-25 mx-auto">
-    </div>
-
-    {% if error %}
-        <div class="alert alert-danger">
-            {{ error }}
+    {% if raspberry_status %}
+        <div class="text-center mb-4">
+            <h1 class="display-4">Dashboard</h1>
+            <p class="lead text-muted">Suivez en temps réel l'état et les informations de vos serres</p>
+            <hr class="w-25 mx-auto">
         </div>
-    {% endif %}
 
-    <div class="row">
-        {% for raspberry in raspberry_status %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card shadow-sm hover-effect">
-                <div class="card-header text-white {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
-                    <h5 class="mb-0">{{ raspberry.device_id }}</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted"><strong>Groupe :</strong> {{ raspberry.group }}</p>
-                    <p class="text-muted"><strong>Emplacement :</strong> {{ raspberry.location }}</p>
-                    <p class="text-muted"><strong>Dernière donnée :</strong> {{ raspberry.last_data }}</p>
-                </div>
-                <div class="card-footer d-flex justify-content-between align-items-center">
-                    <span class="badge {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
-                        {{ raspberry.status }}
-                    </span>
-                    <a href="{% url 'raspberry_detail' raspberry.id %}" class="btn btn-outline-primary btn-sm">
-                        Détails
-                    </a>
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="row">
+            {% for raspberry in raspberry_status %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow-sm hover-effect">
+                    <div class="card-header text-white {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
+                        <h5 class="mb-0">{{ raspberry.device_id }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted"><strong>Groupe :</strong> {{ raspberry.group }}</p>
+                        <p class="text-muted"><strong>Emplacement :</strong> {{ raspberry.location }}</p>
+                        <p class="text-muted"><strong>Dernière donnée :</strong> {{ raspberry.last_data }}</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <span class="badge {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ raspberry.status }}
+                        </span>
+                        <a href="{% url 'raspberry_detail' raspberry.id %}" class="btn btn-outline-primary btn-sm">
+                            Détails
+                        </a>
+                        {% if user.is_staff %}
+                            <a href="{% url 'raspberry_update' raspberry.id %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'raspberry_delete' raspberry.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
+    {% else %}
+        <div class="text-center">
+            <h1 class="display-4">Dashboard</h1>
+            <p class="lead text-muted">Aucune serre n'est enregistrée</p>
+        </div>
+    {% endif %}
 
 </div>
 {% endblock %}

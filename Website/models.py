@@ -32,7 +32,7 @@ class Raspberry(models.Model):
     device_id = models.CharField(max_length=100, unique=True)
     api_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, related_name='raspberries')
-    location_description = models.TextField(blank=True, null=True)  # Emplacement physique
+    location_description = models.TextField(blank=True, null=True)
     active = models.BooleanField(default=True)
     STATUS_CHOICES = [
         ('unassigned', 'Non Assigné'),
