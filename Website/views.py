@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.utils.timezone import now, timedelta
@@ -13,16 +14,20 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import base64
 import json
 
+import logging
+
 from .models import SensorData, SensorLocation, Group
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import SensorDataSerializer
+from .serializers import SensorDataWriteSerializer, SensorDataReadSerializer
 from django.db import transaction
 
 from Website.models import *
 from Website.forms import *
+
+
+logger = logging.getLogger(__name__)
 
 def handler404(request, exception):
     return redirect('login')
@@ -83,7 +88,7 @@ def home_page(request):
         else:
             status = "Hors ligne"
         raspberry_status.append({
-            'id': raspberry.id,  # Inclure l'ID ici
+            'id': raspberry.id, 
             'device_id': raspberry.device_id,
             'group': raspberry.group.name if raspberry.group else "Non Assigné",
             'location': raspberry.location_description or "Non spécifié",
@@ -99,8 +104,6 @@ def home_page(request):
 def graph_page(request, id):
     # Récupérer le Raspberry
     raspberry = get_object_or_404(Raspberry, id=id)
-
-    # Récupérer les SensorLocations associées
     sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
 
     # Récupérer la plage de temps ou définir 24h par défaut
@@ -119,13 +122,11 @@ def graph_page(request, id):
     temperature_data = [data.temperature for data in sensor_data]
     humidity_data = [data.air_humidity for data in sensor_data]
 
-    # Derniers relevés pour les jauges
     latest_data = sensor_data.last()
 
     current_temperature = latest_data.temperature if latest_data else 0
     current_humidity = latest_data.air_humidity if latest_data else 0
 
-    # Configuration des jauges
     gauges = [
         {
             'id': 'temperatureGauge',
@@ -155,7 +156,6 @@ def graph_page(request, id):
         },
     ]
 
-    # Configuration des graphiques
     charts = [
         {
             'id': 'temperatureChart',
@@ -193,7 +193,6 @@ def graph_page(request, id):
         },
     ]
 
-    # Rendu de la page
     return render(request, 'graph.html', {
         'raspberry': raspberry,
         'gauges': gauges,
@@ -204,7 +203,6 @@ def graph_page(request, id):
 @user_passes_test(is_admin)
 @login_required(login_url='login')
 def raspberry_update(request, id):
-    # Récupérer le Raspberry
     raspberry = get_object_or_404(Raspberry, id=id)
 
     if request.method == 'POST':
@@ -224,7 +222,6 @@ def raspberry_update(request, id):
 @user_passes_test(is_admin)
 @login_required(login_url='login')
 def raspberry_delete(request, id):
-    # Récupérer le Raspberry
     raspberry = get_object_or_404(Raspberry, id=id)
     raspberry.delete()
     return redirect('home')
@@ -250,19 +247,16 @@ def receive_sensor_data(request):
         aesgcm = AESGCM(settings.AES_SECRET_KEY)
         decrypted_data = aesgcm.decrypt(nonce, ciphertext, None)
 
-        # Charger les données JSON
         data = json.loads(decrypted_data.decode('utf-8'))
 
         with transaction.atomic():
-            # Gérer le Group
             group_data = data['sensor_location']['raspberry']['group']
             group, _ = Group.objects.get_or_create(
                 name=group_data['name'],
                 defaults={'description': group_data.get('description', '')}
             )
-            data['sensor_location']['raspberry']['group'] = group.id  # Remplacer par l'ID du group
+            data['sensor_location']['raspberry']['group'] = group.id 
 
-            # Gérer le Raspberry
             raspberry_data = data['sensor_location']['raspberry']
             raspberry, _ = Raspberry.objects.get_or_create(
                 device_id=raspberry_data['device_id'],
@@ -272,9 +266,8 @@ def receive_sensor_data(request):
                     'status': raspberry_data.get('status', 'unassigned')
                 }
             )
-            data['sensor_location']['raspberry'] = raspberry.device_id  # Utiliser device_id comme identifiant
+            data['sensor_location']['raspberry'] = raspberry.device_id 
 
-            # Gérer le Plant
             plant_data = data['sensor_location']['plant']
             plant, _ = Plant.objects.get_or_create(
                 name=plant_data['name'],
@@ -288,11 +281,9 @@ def receive_sensor_data(request):
                     'soil_moisture_max': plant_data.get('soil_moisture_max'),
                 }
             )
-            data['sensor_location']['plant'] = plant.id  # Remplacer par l'ID du plant
-
-
+            data['sensor_location']['plant'] = plant.id 
         # Valider et enregistrer les données
-        serializer = SensorDataSerializer(data=data)
+        serializer = SensorDataWriteSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Données reçues avec succès."}, status=status.HTTP_201_CREATED)
@@ -300,3 +291,46 @@ def receive_sensor_data(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_latest_sensor_data(request, raspberry_id):
+    try:
+        raspberry = get_object_or_404(Raspberry, id=raspberry_id)
+        logger.info(f"Utilisateur {request.user} a accédé aux données de Raspberry {raspberry_id}")
+
+        # Vérifier si l'utilisateur a accès à ce Raspberry
+        if not request.user.is_superuser and not request.user.is_staff:
+            # Vérifier si l'utilisateur appartient au groupe du Raspberry
+            user_groups = Group.objects.filter(
+                raspberries=raspberry,
+                user_groups__user=request.user
+            )
+            if not user_groups.exists():
+                logger.warning(f"Utilisateur {request.user} n'a pas accès au Raspberry {raspberry_id}")
+                return Response({"error": "Accès non autorisé."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Définir la plage de temps
+        time_range = request.GET.get('time_range', '24')
+        try:
+            time_range = int(time_range)
+        except ValueError:
+            logger.error(f"Valeur de time_range invalide: {time_range}")
+            return Response({"error": "Valeur de time_range invalide."}, status=status.HTTP_400_BAD_REQUEST)
+
+        end_time = now()
+        start_time = end_time - timedelta(hours=time_range)
+
+        sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
+        sensor_data = SensorData.objects.filter(
+            sensor_location__in=sensor_locations,
+            timestamp__gte=start_time
+        ).order_by('timestamp')
+
+        serializer = SensorDataReadSerializer(sensor_data, many=True)
+        logger.info(f"Renvoyé {sensor_data.count()} enregistrements de SensorData pour Raspberry {raspberry_id}")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.exception(f"Erreur dans get_latest_sensor_data: {e}")
+        return Response({"error": "Erreur interne du serveur."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

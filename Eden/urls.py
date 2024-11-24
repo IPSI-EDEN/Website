@@ -14,6 +14,7 @@ urlpatterns = [
     path('login/', website_views.login_view, name='login'),
     path('logout/', website_views.logout_view, name='logout'),
     path('api/sensor-data/', website_views.receive_sensor_data, name='receive_sensor_data'),
+    path('api/sensor-data/<int:raspberry_id>/', website_views.get_latest_sensor_data, name='get_latest_sensor_data'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'Website.views.handler404'

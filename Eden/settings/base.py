@@ -94,13 +94,8 @@ STATICFILES_DIRS = [
     BASE_DIR  / 'Eden/static',
 ]
 
-# URL de redirection après connexion réussie
 LOGIN_REDIRECT_URL = 'home'
-
-# URL de redirection après déconnexion
 LOGOUT_REDIRECT_URL = 'login'
-
-# URL de connexion par défaut
 LOGIN_URL = 'login'
 
 STATIC_URL = '/static/'

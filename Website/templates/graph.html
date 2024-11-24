@@ -6,7 +6,7 @@
 
     <h1 class="mt-4">Données pour la serre : {{ raspberry.device_id }}</h1>
     <p><strong>Description :</strong> {{ raspberry.location_description }}</p>
-    <p><strong>Groupe :</strong> {{ raspberry.group.name}}</p>
+    <p><strong>Groupe :</strong> {{ raspberry.group.name }}</p>
     <p><strong>Status :</strong> {{ raspberry.get_status_display }}</p>
 
     <!-- Filtres -->
@@ -127,47 +127,204 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        {% for gauge in gauges %}
-        var gaugeData = {{ gauge.json|safe }};
-        // Desktop
-        Plotly.newPlot('{{ gauge.id }}', gaugeData.data, gaugeData.layout, {responsive: true});
-        // Mobile
-        Plotly.newPlot('{{ gauge.id }}-mobile', gaugeData.data, gaugeData.layout, {responsive: true});
-        {% endfor %}
+        // Détermine si la plage de temps sélectionnée nécessite l'affichage de la date
+        var includeDate = {{ selected_time_range }} > 24;
 
-        {% for chart in charts %}
-        var chartData = {{ chart.json|safe }};
-        // Desktop
-        Plotly.newPlot('{{ chart.id }}', chartData.data, chartData.layout, {responsive: true});
-        // Mobile
-        Plotly.newPlot('{{ chart.id }}-mobile', chartData.data, chartData.layout, {responsive: true});
-        {% endfor %}
+        // Fonction pour initialiser les graphiques
+        function initializePlots() {
+            {% for gauge in gauges %}
+            Plotly.newPlot('{{ gauge.id }}', {{ gauge.json|safe }}.data, {
+                ...{{ gauge.json|safe }}.layout,
+                xaxis: {
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000,
+                    {% if includeDate %}
+                    tickformat: '%d %b %H:%M',
+                    {% else %}
+                    tickformat: '%H:%M',
+                    {% endif %}
+                    tickangle: 0
+                },
+                legend: {
+                    font: {
+                        size: 14,
+                        color: '#000000'
+                    },
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    bordercolor: '#000000',
+                    borderwidth: 1,
+                    x: 1,
+                    y: 1
+                },
+                margin: { t: 40, l: 50, r: 50, b: 50 }
+            }, {responsive: true});
+            Plotly.newPlot('{{ gauge.id }}-mobile', {{ gauge.json|safe }}.data, {
+                ...{{ gauge.json|safe }}.layout,
+                xaxis: {
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000, 
+                    {% if includeDate %}
+                    tickformat: '%d %b %H:%M',
+                    {% else %}
+                    tickformat: '%H:%M',
+                    {% endif %}
+                    tickangle: 0
+                },
+                legend: {
+                    font: {
+                        size: 14,
+                        color: '#000000'
+                    },
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    bordercolor: '#000000',
+                    borderwidth: 1,
+                    x: 1,
+                    y: 1
+                },
+                margin: { t: 40, l: 50, r: 50, b: 50 }
+            }, {responsive: true});
+            {% endfor %}
 
-        function resizePlotlyGraphs(container) {
-            var plotContainers = container.querySelectorAll('.plot-container');
-            plotContainers.forEach(function(plot) {
-                Plotly.Plots.resize(plot);
-            });
+            {% for chart in charts %}
+            Plotly.newPlot('{{ chart.id }}', {{ chart.json|safe }}.data, {
+                ...{{ chart.json|safe }}.layout,
+                xaxis: {
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000, 
+                    {% if includeDate %}
+                    tickformat: '%d %b %H:%M',
+                    {% else %}
+                    tickformat: '%H:%M',
+                    {% endif %}
+                    tickangle: 0
+                },
+                legend: {
+                    font: {
+                        size: 14,
+                        color: '#000000'
+                    },
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    bordercolor: '#000000',
+                    borderwidth: 1,
+                    x: 1,
+                    y: 1
+                },
+                margin: { t: 40, l: 50, r: 50, b: 50 }
+            }, {responsive: true});
+            Plotly.newPlot('{{ chart.id }}-mobile', {{ chart.json|safe }}.data, {
+                ...{{ chart.json|safe }}.layout,
+                xaxis: {
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000,
+                    {% if includeDate %}
+                    tickformat: '%d %b %H:%M',
+                    {% else %}
+                    tickformat: '%H:%M',
+                    {% endif %}
+                    tickangle: 0
+                },
+                legend: {
+                    font: {
+                        size: 14,
+                        color: '#000000'
+                    },
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    bordercolor: '#000000',
+                    borderwidth: 1,
+                    x: 1,
+                    y: 1
+                },
+                margin: { t: 40, l: 50, r: 50, b: 50 }
+            }, {responsive: true});
+            {% endfor %}
         }
-        
-        var gaugeCarousel = document.getElementById('gaugeCarousel');
-        var chartCarousel = document.getElementById('chartCarousel');
 
-        gaugeCarousel.addEventListener('slide.bs.carousel', function (event) {
-            var nextSlide = event.relatedTarget;
-            resizePlotlyGraphs(nextSlide);
-        });
+        function updateGauges(latestData) {
+            if (latestData.temperature !== undefined) {
+                Plotly.restyle('temperatureGauge', 'value', [latestData.temperature]);
+                Plotly.restyle('temperatureGauge-mobile', 'value', [latestData.temperature]);
+            }
 
-        chartCarousel.addEventListener('slide.bs.carousel', function (event) {
-            var nextSlide = event.relatedTarget;
-            resizePlotlyGraphs(nextSlide);
-        });
+            if (latestData.air_humidity !== undefined) {
+                Plotly.restyle('humidityGauge', 'value', [latestData.air_humidity]);
+                Plotly.restyle('humidityGauge-mobile', 'value', [latestData.air_humidity]);
+            }
+        }
 
-        var initialGaugeActive = gaugeCarousel.querySelector('.carousel-item.active');
-        var initialChartActive = chartCarousel.querySelector('.carousel-item.active');
-        resizePlotlyGraphs(initialGaugeActive);
-        resizePlotlyGraphs(initialChartActive);
+        function updateCharts(data) {
+            var timeLabels = data.map(entry => entry.timestamp);
+            var temperatureData = data.map(entry => entry.temperature);
+            var humidityData = data.map(entry => entry.air_humidity);
+
+            {% if includeDate %}
+            var tickFormat = '%d %b %H:%M';
+            {% else %}
+            var tickFormat = '%H:%M';
+            {% endif %}
+
+            Plotly.update('temperatureChart', {
+                x: [timeLabels],
+                y: [temperatureData]
+            }, {
+                'xaxis.tickformat': tickFormat
+            }, [0]); 
+
+            Plotly.update('temperatureChart-mobile', {
+                x: [timeLabels],
+                y: [temperatureData]
+            }, {
+                'xaxis.tickformat': tickFormat
+            }, [0]);
+
+            Plotly.update('humidityChart', {
+                x: [timeLabels],
+                y: [humidityData]
+            }, {
+                'xaxis.tickformat': tickFormat
+            }, [0]);
+
+            Plotly.update('humidityChart-mobile', {
+                x: [timeLabels],
+                y: [humidityData]
+            }, {
+                'xaxis.tickformat': tickFormat
+            }, [0]);
+        }
+
+        function fetchData() {
+            var timeRange = document.getElementById('timeRangeSelect').value;
+            fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Erreur réseau');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.length > 0) {
+                    var latestData = data[data.length - 1];
+                    updateGauges(latestData);
+                    updateCharts(data);
+                }
+            })
+        }
+
+        initializePlots();
+
+        setInterval(fetchData, 10000); 
     });
 </script>
+
 
 {% endblock %}
