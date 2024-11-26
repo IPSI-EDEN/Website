@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.utils.timezone import now, timedelta
@@ -229,6 +229,7 @@ def raspberry_delete(request, id):
 
 @require_POST
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def receive_sensor_data(request):
     try:
         # Récupérer les données chiffrées
