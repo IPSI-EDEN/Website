@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.forms import AuthenticationForm
-from rest_framework.authentication import SessionAuthentication
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils.timezone import now, timedelta
 from django.db.models import Avg, Max
@@ -228,7 +228,7 @@ def raspberry_delete(request, id):
     return redirect('home')
     
 
-@require_POST
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def receive_sensor_data(request):
