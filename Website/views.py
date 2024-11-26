@@ -3,7 +3,6 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.utils.timezone import now, timedelta
@@ -229,7 +228,6 @@ def raspberry_delete(request, id):
     
 
 @require_POST
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def receive_sensor_data(request):
