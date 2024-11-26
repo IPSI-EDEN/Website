@@ -13,4 +13,3 @@ from channels.routing import ProtocolTypeRouter, get_default_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Eden.settings')
 django.setup()
-from .routing import application
