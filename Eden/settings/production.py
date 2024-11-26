@@ -16,6 +16,12 @@ DATABASES = {
 
 AES_SECRET_KEY = bytes.fromhex(os.getenv('AES_SECRET_KEY'))
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}
+
 # Sécurité SSL/TLS
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True

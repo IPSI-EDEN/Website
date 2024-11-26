@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.forms import AuthenticationForm
+from rest_framework.authentication import SessionAuthentication
 from django.contrib import messages
 from django.utils.timezone import now, timedelta
 from django.db.models import Avg, Max
