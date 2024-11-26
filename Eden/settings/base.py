@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -124,13 +125,15 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console_debug': {  # Handler pour DEBUG
+        'console_debug': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
         },
-        'console_info': {  # Handler pour INFO
+        'console_info': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
         },
         'file': {
             'level': 'ERROR',
@@ -143,6 +146,12 @@ LOGGING = {
             'handlers': ['console_debug', 'console_info', 'file'],
             'level': 'DEBUG' if DEBUG else 'ERROR',
             'propagate': True,
+        },
+
+        'Website': {  # Remplacez 'my_app' par le nom de votre application
+            'handlers': ['console_debug', 'console_info', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
