@@ -24,8 +24,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'Website.middleware.DisableCSRFForAPI',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'Website.middleware.SkipLoginForAPI',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -118,7 +118,7 @@ FILE_UPLOAD_HANDLERS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOG_DIR = '/app/logs'
-os.makedirs(LOG_DIR, exist_ok=True)  # Crée automatiquement le dossier s'il n'existe pas
+os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
     'version': 1,
