@@ -32,6 +32,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://89.47.50.92",
+]
+
 ROOT_URLCONF = 'Eden.urls'
 
 TEMPLATES = [
