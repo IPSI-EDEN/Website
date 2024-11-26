@@ -26,7 +26,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     #'Website.middleware.DisableCSRFForAPI',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'Website.middleware.SkipLoginForAPI',
+    #'Website.middleware.SkipLoginForAPI',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
