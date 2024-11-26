@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-8ofratmvbpylc5jbs8d0%f+0ej@^+mi_g4f7jgs*2ac_@@hs3&')
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['89.47.50.92', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -24,8 +24,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'Website.middleware.DisableCSRFForAPI',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'Website.middleware.SkipLoginForAPI',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
