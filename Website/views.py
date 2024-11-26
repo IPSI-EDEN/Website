@@ -28,7 +28,7 @@ from Website.models import *
 from Website.forms import *
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('Website')
 
 def handler404(request, exception):
     return redirect('login')

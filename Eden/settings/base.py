@@ -124,32 +124,39 @@ os.makedirs(LOG_DIR, exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] [{levelname}] [{name}] {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
-        'console_debug': {
+        'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'stream': sys.stdout,
-        },
-        'console_info': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
             'stream': sys.stdout,
         },
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': os.path.join(LOG_DIR, 'django_errors.log'),
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console_debug', 'console_info', 'file'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG' if DEBUG else 'ERROR',
             'propagate': True,
         },
 
-        'Website': {  # Remplacez 'my_app' par le nom de votre application
-            'handlers': ['console_debug', 'console_info', 'file'],
+        'Website': {  
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': False,
         },
