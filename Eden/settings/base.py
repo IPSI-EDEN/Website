@@ -117,6 +117,9 @@ FILE_UPLOAD_HANDLERS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOG_DIR = '/app/logs'
+os.makedirs(LOG_DIR, exist_ok=True)  # Crée automatiquement le dossier s'il n'existe pas
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -128,12 +131,12 @@ LOGGING = {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': '/app/logs/django_errors.log',  # Assurez-vous que ce chemin existe
+            'filename': os.path.join(LOG_DIR, 'django_errors.log'),
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],  # Console pour Docker logs, fichier pour persistance
+            'handlers': ['console', 'file'],
             'level': 'DEBUG' if DEBUG else 'ERROR',
             'propagate': True,
         },

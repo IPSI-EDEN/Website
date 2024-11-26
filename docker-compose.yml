@@ -28,6 +28,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certs:/etc/nginx/certs
+      - ./logs:/app/logs
     depends_on:
       - web
 

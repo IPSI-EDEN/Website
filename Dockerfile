@@ -7,6 +7,8 @@ WORKDIR /app
 # Copy the requirements.txt into the container
 COPY requirements.txt .
 
+RUN mkdir -p /app/logs
+
 # Install required system dependencies for building Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends gcc && \
     rm -rf /var/lib/apt/lists/*
