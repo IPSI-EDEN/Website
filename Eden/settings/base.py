@@ -116,3 +116,26 @@ FILE_UPLOAD_HANDLERS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': '/app/logs/django_errors.log',  # Assurez-vous que ce chemin existe
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],  # Console pour Docker logs, fichier pour persistance
+            'level': 'DEBUG' if DEBUG else 'ERROR',
+            'propagate': True,
+        },
+    },
+}
