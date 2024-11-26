@@ -232,7 +232,7 @@ def raspberry_delete(request, id):
 def receive_sensor_data(request):
     try:
         # Récupérer les données chiffrées
-        encrypted_data_b64 = request.data.get('encrypted_data')
+        encrypted_data_b64 = request.data.get('encrypted')
         if not encrypted_data_b64:
             return Response({"error": "Données chiffrées manquantes."}, status=status.HTTP_400_BAD_REQUEST)
 
