@@ -141,22 +141,28 @@ LOGGING = {
             'formatter': 'verbose',
             'stream': sys.stdout,
         },
-        'file': {
+        'file_error': {  
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': os.path.join(LOG_DIR, 'django_errors.log'),
             'formatter': 'verbose',
         },
+        'file_info': { 
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_info.log'),
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file_error', 'file_info'],  
             'level': 'DEBUG' if DEBUG else 'ERROR',
             'propagate': True,
         },
 
         'Website': {  
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file_error', 'file_info'],
             'level': 'DEBUG',
             'propagate': False,
         },
