@@ -9,3 +9,4 @@ channels
 djangorestframework
 cryptography
 channels-redis
+python-dotenv
