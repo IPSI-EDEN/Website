@@ -100,17 +100,17 @@ USE_TZ = True
 FORCE_SCRIPT_NAME = '/Eden'
 
 STATICFILES_DIRS = [
-    BASE_DIR  / 'Eden/static',
+    BASE_DIR / 'Eden/static',
 ]
 
 LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'login'
-LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = '/Eden/login/'
+LOGIN_URL = '/Eden/login/'
 
-STATIC_URL = 'static/'
+STATIC_URL = '/Eden/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/Eden/media/'
 MEDIA_ROOT = BASE_DIR / 'Eden/mediafiles'
 
 FILE_UPLOAD_HANDLERS = [
