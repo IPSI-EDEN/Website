@@ -97,6 +97,8 @@ TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
 USE_TZ = True
 
+FORCE_SCRIPT_NAME = '/Eden'
+
 STATICFILES_DIRS = [
     BASE_DIR  / 'Eden/static',
 ]
