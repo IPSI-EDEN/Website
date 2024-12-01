@@ -105,10 +105,10 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
 
-STATIC_URL = '/static/'
+STATIC_URL = 'Eden/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-MEDIA_URL = '/media/'
+MEDIA_URL = 'Eden/media/'
 MEDIA_ROOT = BASE_DIR / 'Eden/mediafiles'
 
 FILE_UPLOAD_HANDLERS = [
