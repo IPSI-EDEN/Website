@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 import base64
 import json
+import os
 
 import logging
 
@@ -290,7 +291,34 @@ def receive_sensor_data(request):
         serializer = SensorDataWriteSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Données reçues avec succès."}, status=status.HTTP_201_CREATED)
+            raspberry_name = data['sensor_location']['raspberry']
+            raspberry = Raspberry.objects.get(device_id=raspberry_name)
+            raspberry_data = {
+                'id': raspberry.id,
+                'device_id': raspberry.device_id,
+                'group': raspberry.group.name if raspberry.group else "Non Assigné",
+                'active': raspberry.active,
+                'pump': True,
+                'fan': True,
+            }
+
+            success_message = {
+                "message": "Données enregistrées avec succès.",
+                "raspberry": raspberry_data
+            }
+
+            # Chiffrer les données de réponse
+            nonce = os.urandom(12)
+            data_bytes = json.dumps(success_message).encode('utf-8')
+            ciphertext = aesgcm.encrypt(nonce, data_bytes, None)
+            encrypted_data = nonce + ciphertext
+            encrypted_data_b64 = base64.b64encode(encrypted_data).decode('utf-8')
+
+            logger.info(f"Réponse chiffrée: {encrypted_data_b64}")
+            return Response({"encrypted": encrypted_data_b64}, status=status.HTTP_201_CREATED)
+        else:
+            logger.error(f"Erreurs de validation: {serializer.errors}")
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as e:
