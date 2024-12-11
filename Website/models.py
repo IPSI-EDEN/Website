@@ -49,10 +49,12 @@ class SensorLocation(models.Model):
     raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='sensor_locations')
     location_name = models.CharField(max_length=100)  # e.g., "North Bed", "South Bed"
     plant = models.ForeignKey(Plant, on_delete=models.CASCADE, related_name='sensor_locations')
-    soil_moisture = models.FloatField(blank=True, null=True, help_text="Current soil moisture level")  # Donnée en direct
+    soil_moisture = models.FloatField(blank=True, null=True, help_text="é2Current soil moisture level")
+    x_position = models.FloatField(help_text="Position X dans la serre", blank=True, null=True)
+    y_position = models.FloatField(help_text="Position Y dans la serre", blank=True, null=True)
 
     class Meta:
-        unique_together = ('raspberry', 'location_name')  # Chaque Raspberry a des emplacements uniques
+        unique_together = ('raspberry', 'location_name')
 
     def __str__(self):
         return f"{self.location_name} ({self.plant.name})"

@@ -20,3 +20,19 @@ class RaspberryForm(forms.ModelForm):
             'active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'status': forms.Select(attrs={'class': 'form-control'})
         }
+
+class PlantThresholdForm(forms.ModelForm):
+    class Meta:
+        model = Plant
+        fields = [
+            'name',
+            'temperature_min',
+            'temperature_max',
+            'humidity_min',
+            'humidity_max',
+            'soil_moisture_min',
+            'soil_moisture_max',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'readonly': 'readonly'}),
+        }
