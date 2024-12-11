@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import base64
 import json
 import os
-import uuid
+
 import logging
 
 from .models import SensorData, SensorLocation, Group
@@ -35,6 +35,7 @@ def handler404(request, exception):
     request_id = str(uuid.uuid4())
     logger.warning(f"[{request_id}] 404 Not Found: URL={request.path}, User={request.user if request.user.is_authenticated else 'Anonymous'}")
     return redirect('login')
+
 
 def login_view(request):
     request_id = str(uuid.uuid4())
@@ -61,12 +62,18 @@ def login_view(request):
     
     return render(request, 'registration/login.html', {'form': form})
 
+
 def logout_view(request):
     request_id = str(uuid.uuid4())
     logger.info(f"[{request_id}] User {request.user} logging out.")
     logout(request)
     messages.success(request, "Vous avez été déconnecté avec succès.")
     return redirect('login')
+
+DEFAULT_GROUP_NAME = "Non Assigné"
+
+def is_admin(user):
+    return user.is_superuser or user.is_staff
 
 @login_required(login_url='login')
 def home_page(request):
@@ -121,7 +128,178 @@ def home_page(request):
             'error': "Une erreur s'est produite lors de la récupération des données.",
         })
 
-@csrf_exempt
+@login_required(login_url='login')
+def threshold(request, id):
+    raspberry = get_object_or_404(Raspberry, id=id)
+    sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
+    plants = Plant.objects.all()
+
+    if request.method == 'POST':
+        # Traitement des données du formulaire pour mettre à jour les seuils des plantes
+        forms = []
+        for plant in plants:
+            form = PlantThresholdForm(request.POST, instance=plant, prefix=str(plant.id))
+            if form.is_valid():
+                form.save()
+            forms.append(form)
+        # Rediriger ou afficher un message de succès
+        return redirect('threshold', id=raspberry.id)
+    else:
+        # Préparation des formulaires pour chaque plante
+        forms = []
+        for plant in plants:
+            form = PlantThresholdForm(instance=plant, prefix=str(plant.id))
+            forms.append(form)
+        
+        # Préparation des données des emplacements des capteurs
+        sensor_locations_data = []
+        for location in sensor_locations:
+            sensor_locations_data.append({
+                'location_name': location.location_name,
+                'plant': {
+                    'name': location.plant.name,
+                },
+                'soil_moisture': location.soil_moisture,
+                'x_position': location.x_position,
+                'y_position': location.y_position,
+            })
+
+        context = {
+            'raspberry': raspberry,
+            'sensor_locations': sensor_locations,
+            'forms': forms,
+            'sensor_locations_json': json.dumps(sensor_locations_data),
+        }
+        return render(request, 'threshold.html', context)
+
+@login_required(login_url='login')
+def graph_page(request, id):
+    # Récupérer le Raspberry
+    raspberry = get_object_or_404(Raspberry, id=id)
+    sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
+
+    # Récupérer la plage de temps ou définir 24h par défaut
+    selected_time_range = int(request.GET.get('time_range', 24))
+    end_time = now()
+    start_time = end_time - timedelta(hours=selected_time_range)
+
+    # Récupérer toutes les données dans l'intervalle de temps
+    sensor_data = SensorData.objects.filter(
+        sensor_location__in=sensor_locations,
+        timestamp__gte=start_time
+    ).order_by('timestamp')
+
+    # Préparer les données pour les graphiques
+    time_labels = [data.timestamp.strftime('%Y-%m-%d %H:%M:%S') for data in sensor_data]
+    temperature_data = [data.temperature for data in sensor_data]
+    humidity_data = [data.air_humidity for data in sensor_data]
+
+    latest_data = sensor_data.last()
+
+    current_temperature = latest_data.temperature if latest_data else 0
+    current_humidity = latest_data.air_humidity if latest_data else 0
+
+    gauges = [
+        {
+            'id': 'temperatureGauge',
+            'title': 'Température actuelle',
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_temperature,
+                    'gauge': {'axis': {'range': [0, 50]}, 'bar': {'color': 'blue'}}
+                }],
+                'layout': {'title': 'Température (°C)'}
+            })
+        },
+        {
+            'id': 'humidityGauge',
+            'title': 'Humidité actuelle',
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_humidity,
+                    'gauge': {'axis': {'range': [0, 100]}, 'bar': {'color': 'green'}}
+                }],
+                'layout': {'title': 'Humidité (%)'}
+            })
+        },
+    ]
+
+    charts = [
+        {
+            'id': 'temperatureChart',
+            'title': 'Évolution de la température',
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': temperature_data,
+                    'mode': 'lines+markers',
+                    'type': 'scatter'
+                }],
+                'layout': {
+                    'title': 'Température (°C)',
+                    'xaxis': {'title': 'Temps'},
+                    'yaxis': {'title': 'Température (°C)'}
+                }
+            })
+        },
+        {
+            'id': 'humidityChart',
+            'title': 'Évolution de l\'humidité',
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': humidity_data,
+                    'mode': 'lines+markers',
+                    'type': 'scatter'
+                }],
+                'layout': {
+                    'title': 'Humidité (%)',
+                    'xaxis': {'title': 'Temps'},
+                    'yaxis': {'title': 'Humidité (%)'}
+                }
+            })
+        },
+    ]
+
+    return render(request, 'graph.html', {
+        'raspberry': raspberry,
+        'gauges': gauges,
+        'charts': charts,
+        'selected_time_range': selected_time_range
+    })
+
+@user_passes_test(is_admin)
+@login_required(login_url='login')
+def raspberry_update(request, id):
+    raspberry = get_object_or_404(Raspberry, id=id)
+
+    if request.method == 'POST':
+        form = RaspberryForm(request.POST, instance=raspberry)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = RaspberryForm(instance=raspberry)
+
+    return render(request, 'raspberry_form.html', {
+        'form': form,
+        'raspberry': raspberry,
+        'action': 'Modifier'
+    })
+
+@user_passes_test(is_admin)
+@login_required(login_url='login')
+def raspberry_delete(request, id):
+    raspberry = get_object_or_404(Raspberry, id=id)
+    raspberry.delete()
+    return redirect('home')
+    
+
+csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def receive_sensor_data(request):
