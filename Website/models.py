@@ -8,25 +8,23 @@ class Group(models.Model):
     name = models.CharField(max_length=100, unique=True)
     logo = models.ImageField(upload_to='group_logos', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    is_default = models.BooleanField(default=False)  # Indique si ce groupe est par défaut
+    is_default = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
-
 
 class Plant(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-    temperature_min = models.FloatField(help_text="Minimum temperature threshold")
-    temperature_max = models.FloatField(help_text="Maximum temperature threshold")
-    humidity_min = models.FloatField(help_text="Minimum air humidity threshold")
-    humidity_max = models.FloatField(help_text="Maximum air humidity threshold")
-    soil_moisture_min = models.FloatField(help_text="Minimum soil moisture threshold")
-    soil_moisture_max = models.FloatField(help_text="Maximum soil moisture threshold")
+    temperature_min = models.FloatField(help_text="Minimum temperature threshold", default=10.0)
+    temperature_max = models.FloatField(help_text="Maximum temperature threshold", default=35.0)
+    humidity_min = models.FloatField(help_text="Minimum air humidity threshold", default=30.0)
+    humidity_max = models.FloatField(help_text="Maximum air humidity threshold", default=80.0)
+    soil_moisture_min = models.FloatField(help_text="Minimum soil moisture threshold", default=20.0)
+    soil_moisture_max = models.FloatField(help_text="Maximum soil moisture threshold", default=70.0)
 
     def __str__(self):
         return self.name
-
 
 class Raspberry(models.Model):
     device_id = models.CharField(max_length=100, unique=True)
@@ -44,12 +42,11 @@ class Raspberry(models.Model):
     def __str__(self):
         return f"Raspberry {self.device_id} in {self.group.name if self.group else 'No Group'}"
 
-
 class SensorLocation(models.Model):
     raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='sensor_locations')
-    location_name = models.CharField(max_length=100)  # e.g., "North Bed", "South Bed"
+    location_name = models.CharField(max_length=100)  
     plant = models.ForeignKey(Plant, on_delete=models.CASCADE, related_name='sensor_locations')
-    soil_moisture = models.FloatField(blank=True, null=True, help_text="é2Current soil moisture level")
+    soil_moisture = models.FloatField(blank=True, null=True, help_text="Current soil moisture level")
     x_position = models.FloatField(help_text="Position X dans la serre", blank=True, null=True)
     y_position = models.FloatField(help_text="Position Y dans la serre", blank=True, null=True)
 
@@ -59,16 +56,15 @@ class SensorLocation(models.Model):
     def __str__(self):
         return f"{self.location_name} ({self.plant.name})"
 
-
 class SensorData(models.Model):
     sensor_location = models.ForeignKey(SensorLocation, on_delete=models.CASCADE, related_name='sensor_data')
     timestamp = models.DateTimeField(auto_now_add=True)
     temperature = models.FloatField(blank=True, null=True)
     air_humidity = models.FloatField(blank=True, null=True)
+    soil_moisture = models.FloatField(blank=True, null=True)  # Nouveau champ
 
     def __str__(self):
         return f"Data at {self.sensor_location} on {self.timestamp}"
-
 
 class Action(models.Model):
     raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='actions')
@@ -88,7 +84,6 @@ class Action(models.Model):
     def __str__(self):
         return f"{self.action_type} at {self.raspberry.device_id} on {self.timestamp}"
 
-
 class DataPayload(models.Model):
     raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='data_payloads')
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -96,7 +91,6 @@ class DataPayload(models.Model):
 
     def __str__(self):
         return f"Payload from {self.raspberry.device_id} on {self.timestamp}"
-
 
 class UserGroup(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_groups')
