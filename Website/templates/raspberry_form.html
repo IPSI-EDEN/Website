@@ -1,10 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit</button>
-</form>
+<div class="container mt-5">
+    <div class="row">
+        <div class="mb-4 justify-content-left">
+            <div class="card shadow-sm hover-effect">
+                <div class="card-header text-white eden-green">
+                    <h5 class="mb-0 text-white">{{ raspberry.device_id }}</h5>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="p-3">
+                        {{ form.as_p }}
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <button type="submit" class="btn eden-green text-white">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
