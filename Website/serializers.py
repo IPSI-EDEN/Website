@@ -8,7 +8,6 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class RaspberrySerializer(serializers.ModelSerializer):
     group = GroupSerializer(read_only=True)
-    
     class Meta:
         model = Raspberry
         fields = ['id', 'device_id', 'group', 'active', 'status', 'location_description']
@@ -18,41 +17,7 @@ class PlantSerializer(serializers.ModelSerializer):
         model = Plant
         fields = ['id', 'name', 'description', 'temperature_min', 'temperature_max', 'humidity_min', 'humidity_max', 'soil_moisture_min', 'soil_moisture_max']
 
-class SensorLocationWriteSerializer(serializers.ModelSerializer):
-    raspberry = serializers.CharField()  
-    plant = serializers.IntegerField()
-
-    class Meta:
-        model = SensorLocation
-        fields = ['raspberry', 'location_name', 'plant', 'soil_moisture']
-
-class SensorDataWriteSerializer(serializers.ModelSerializer):
-    sensor_location = SensorLocationWriteSerializer()
-
-    class Meta:
-        model = SensorData
-        fields = ['sensor_location', 'timestamp', 'temperature', 'air_humidity']
-
-    def create(self, validated_data):
-        sensor_location_data = validated_data.pop('sensor_location')
-        plant_id = sensor_location_data['plant']
-        raspberry_device_id = sensor_location_data['raspberry']
-
-        raspberry = Raspberry.objects.get(device_id=raspberry_device_id)
-
-        sensor_location, _ = SensorLocation.objects.get_or_create(
-            raspberry=raspberry,
-            plant_id=plant_id,
-            location_name=sensor_location_data['location_name'],
-            defaults={'soil_moisture': sensor_location_data.get('soil_moisture')}
-        )
-
-        return SensorData.objects.create(
-            sensor_location=sensor_location,
-            **validated_data
-        )
-
-class SensorLocationReadSerializer(serializers.ModelSerializer):
+class SensorLocationSerializer(serializers.ModelSerializer):
     raspberry = serializers.CharField(source='raspberry.device_id', read_only=True)
     plant = PlantSerializer(read_only=True)
 
@@ -60,9 +25,20 @@ class SensorLocationReadSerializer(serializers.ModelSerializer):
         model = SensorLocation
         fields = ['raspberry', 'location_name', 'plant', 'soil_moisture']
 
-class SensorDataReadSerializer(serializers.ModelSerializer):
-    sensor_location = SensorLocationReadSerializer(read_only=True)
+class SensorDataSerializer(serializers.ModelSerializer):
+    sensor_location = SensorLocationSerializer(read_only=True)
 
     class Meta:
         model = SensorData
-        fields = ['sensor_location', 'timestamp', 'temperature', 'air_humidity']
+        fields = ['sensor_location', 'timestamp', 'temperature', 'air_humidity', 'soil_moisture']
+
+class IncomingLocationSerializer(serializers.Serializer):
+    location_name = serializers.CharField()
+    soil_moisture = serializers.FloatField()
+
+class IncomingDataSerializer(serializers.Serializer):
+    timestamp = serializers.DateTimeField()
+    raspberry = serializers.DictField()
+    locations = IncomingLocationSerializer(many=True)
+    temperature = serializers.FloatField()
+    air_humidity = serializers.FloatField()
