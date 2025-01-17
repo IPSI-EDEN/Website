@@ -37,6 +37,21 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 LOG_DIR = '/app/logs'
 os.makedirs(LOG_DIR, exist_ok=True)
 
+FORCE_SCRIPT_NAME = '/Eden'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'Eden/static',
+]
+
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = '/Eden/login/'
+LOGIN_URL = '/Eden/login/'
+
+STATIC_URL = '/Eden/static/'
+
+MEDIA_URL = '/Eden/media/'
+MEDIA_ROOT = BASE_DIR / 'Eden/mediafiles'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
