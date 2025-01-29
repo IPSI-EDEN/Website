@@ -61,7 +61,8 @@ class SensorData(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     temperature = models.FloatField(blank=True, null=True)
     air_humidity = models.FloatField(blank=True, null=True)
-    soil_moisture = models.FloatField(blank=True, null=True)  # Nouveau champ
+    soil_moisture = models.FloatField(blank=True, null=True)
+    water_level = models.FloatField(blank=True, null=True)
 
     def __str__(self):
         return f"Data at {self.sensor_location} on {self.timestamp}"

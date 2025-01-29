@@ -9,7 +9,7 @@
     <p><strong>Groupe :</strong> {{ raspberry.group.name }}</p>
     <p><strong>Status :</strong> {{ raspberry.get_status_display }}</p>
 
-    <!-- Filtres -->
+    <!-- Filtres - sélection de la plage de temps -->
     <form method="get" class="mb-4">
         <div class="row g-3">
             <div class="col-md-6">
@@ -26,9 +26,9 @@
         </div>
     </form>
 
-     <!-- Section des jauges -->
-     <div class="row">
-        <!-- Affichage pour les écrans larges -->
+    <!-- Section des jauges -->
+    <div class="row">
+        <!-- Affichage Desktop (cartes) -->
         <div class="col-12 d-none d-md-block">
             <div class="row">
                 {% for gauge in gauges %}
@@ -46,13 +46,13 @@
             </div>
         </div>
 
-        <!-- Carrousel pour les écrans mobiles -->
+        <!-- Carrousel Mobile -->
         <div class="col-12 d-block d-md-none">
             <div id="gaugeCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     {% for gauge in gauges %}
                     <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <div class="card h-100 text-center">
+                        <div class="card text-center">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">{{ gauge.title }}</h5>
                             </div>
@@ -75,9 +75,7 @@
         </div>
     </div>
 
-    <!-- Section des graphiques -->
     <div class="row">
-        <!-- Affichage pour les écrans larges -->
         <div class="col-12 d-none d-md-block">
             <div class="row">
                 {% for chart in charts %}
@@ -87,6 +85,7 @@
                             <h5 class="card-title mb-0">{{ chart.title }}</h5>
                         </div>
                         <div class="card-body p-0">
+                            <!-- Plotly chart container -->
                             <div id="{{ chart.id }}" class="plot-container"></div>
                         </div>
                     </div>
@@ -95,13 +94,13 @@
             </div>
         </div>
 
-        <!-- Carrousel pour les écrans mobiles -->
+        <!-- Carrousel Mobile -->
         <div class="col-12 d-block d-md-none">
             <div id="chartCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     {% for chart in charts %}
                     <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <div class="card h-100 text-center">
+                        <div class="card text-center">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">{{ chart.title }}</h5>
                             </div>
@@ -127,172 +126,44 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Détermine si la plage de temps sélectionnée nécessite l'affichage de la date
         var includeDate = {{ selected_time_range }} > 24;
 
-        // Fonction pour initialiser les graphiques
         function initializePlots() {
             {% for gauge in gauges %}
             Plotly.newPlot('{{ gauge.id }}', {{ gauge.json|safe }}.data, {
                 ...{{ gauge.json|safe }}.layout,
-                xaxis: {
-                    title: 'Temps',
-                    type: 'date',
-                    dtick: 900000,
-                    {% if includeDate %}
-                    tickformat: '%d %b %H:%M',
-                    {% else %}
-                    tickformat: '%H:%M',
-                    {% endif %}
-                    tickangle: 0
-                },
-                legend: {
-                    font: {
-                        size: 14,
-                        color: '#000000'
-                    },
-                    bgcolor: 'rgba(255, 255, 255, 0.8)',
-                    bordercolor: '#000000',
-                    borderwidth: 1,
-                    x: 1,
-                    y: 1
-                },
-                margin: { t: 40, l: 50, r: 50, b: 50 }
+                template: 'plotly_white' 
             }, {responsive: true});
+
             Plotly.newPlot('{{ gauge.id }}-mobile', {{ gauge.json|safe }}.data, {
                 ...{{ gauge.json|safe }}.layout,
-                xaxis: {
-                    title: 'Temps',
-                    type: 'date',
-                    dtick: 900000, 
-                    {% if includeDate %}
-                    tickformat: '%d %b %H:%M',
-                    {% else %}
-                    tickformat: '%H:%M',
-                    {% endif %}
-                    tickangle: 0
-                },
-                legend: {
-                    font: {
-                        size: 14,
-                        color: '#000000'
-                    },
-                    bgcolor: 'rgba(255, 255, 255, 0.8)',
-                    bordercolor: '#000000',
-                    borderwidth: 1,
-                    x: 1,
-                    y: 1
-                },
-                margin: { t: 40, l: 50, r: 50, b: 50 }
+                template: 'plotly_white'
             }, {responsive: true});
             {% endfor %}
 
             {% for chart in charts %}
             Plotly.newPlot('{{ chart.id }}', {{ chart.json|safe }}.data, {
                 ...{{ chart.json|safe }}.layout,
-                xaxis: {
-                    title: 'Temps',
-                    type: 'date',
-                    dtick: 900000, 
-                    {% if includeDate %}
-                    tickformat: '%d %b %H:%M',
-                    {% else %}
-                    tickformat: '%H:%M',
-                    {% endif %}
-                    tickangle: 0
-                },
-                legend: {
-                    font: {
-                        size: 14,
-                        color: '#000000'
-                    },
-                    bgcolor: 'rgba(255, 255, 255, 0.8)',
-                    bordercolor: '#000000',
-                    borderwidth: 1,
-                    x: 1,
-                    y: 1
-                },
-                margin: { t: 40, l: 50, r: 50, b: 50 }
-            }, {responsive: true});
-            Plotly.newPlot('{{ chart.id }}-mobile', {{ chart.json|safe }}.data, {
-                ...{{ chart.json|safe }}.layout,
+                template: 'plotly_white',
                 xaxis: {
                     title: 'Temps',
                     type: 'date',
                     dtick: 900000,
-                    {% if includeDate %}
-                    tickformat: '%d %b %H:%M',
-                    {% else %}
-                    tickformat: '%H:%M',
-                    {% endif %}
-                    tickangle: 0
-                },
-                legend: {
-                    font: {
-                        size: 14,
-                        color: '#000000'
-                    },
-                    bgcolor: 'rgba(255, 255, 255, 0.8)',
-                    bordercolor: '#000000',
-                    borderwidth: 1,
-                    x: 1,
-                    y: 1
-                },
-                margin: { t: 40, l: 50, r: 50, b: 50 }
+                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
+                }
+            }, {responsive: true});
+
+            Plotly.newPlot('{{ chart.id }}-mobile', {{ chart.json|safe }}.data, {
+                ...{{ chart.json|safe }}.layout,
+                template: 'plotly_white',
+                xaxis: {
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000,
+                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
+                }
             }, {responsive: true});
             {% endfor %}
-        }
-
-        function updateGauges(latestData) {
-            if (latestData.temperature !== undefined) {
-                Plotly.restyle('temperatureGauge', 'value', [latestData.temperature]);
-                Plotly.restyle('temperatureGauge-mobile', 'value', [latestData.temperature]);
-            }
-
-            if (latestData.air_humidity !== undefined) {
-                Plotly.restyle('humidityGauge', 'value', [latestData.air_humidity]);
-                Plotly.restyle('humidityGauge-mobile', 'value', [latestData.air_humidity]);
-            }
-        }
-
-        function updateCharts(data) {
-            var timeLabels = data.map(entry => entry.timestamp);
-            var temperatureData = data.map(entry => entry.temperature);
-            var humidityData = data.map(entry => entry.air_humidity);
-
-            {% if includeDate %}
-            var tickFormat = '%d %b %H:%M';
-            {% else %}
-            var tickFormat = '%H:%M';
-            {% endif %}
-
-            Plotly.update('temperatureChart', {
-                x: [timeLabels],
-                y: [temperatureData]
-            }, {
-                'xaxis.tickformat': tickFormat
-            }, [0]); 
-
-            Plotly.update('temperatureChart-mobile', {
-                x: [timeLabels],
-                y: [temperatureData]
-            }, {
-                'xaxis.tickformat': tickFormat
-            }, [0]);
-
-            Plotly.update('humidityChart', {
-                x: [timeLabels],
-                y: [humidityData]
-            }, {
-                'xaxis.tickformat': tickFormat
-            }, [0]);
-
-            Plotly.update('humidityChart-mobile', {
-                x: [timeLabels],
-                y: [humidityData]
-            }, {
-                'xaxis.tickformat': tickFormat
-            }, [0]);
         }
 
         function fetchData() {
@@ -300,7 +171,7 @@
             fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
                 credentials: 'same-origin',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => {
@@ -313,18 +184,17 @@
             })
             .then(data => {
                 if (data.length > 0) {
-                    var latestData = data[data.length - 1];
-                    updateGauges(latestData);
-                    updateCharts(data);
+                    
                 }
             })
+            .catch(error => {
+                console.error("Erreur lors de la récupération des données:", error);
+            });
         }
 
         initializePlots();
 
-        setInterval(fetchData, 10000); 
+        setInterval(fetchData, 10000);
     });
 </script>
-
-
 {% endblock %}

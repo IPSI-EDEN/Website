@@ -174,30 +174,51 @@ def threshold(request, id):
 
 @login_required(login_url='login')
 def graph_page(request, id):
-    # Récupérer le Raspberry
     raspberry = get_object_or_404(Raspberry, id=id)
     sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
 
-    # Récupérer la plage de temps ou définir 24h par défaut
     selected_time_range = int(request.GET.get('time_range', 24))
     end_time = now()
     start_time = end_time - timedelta(hours=selected_time_range)
 
-    # Récupérer toutes les données dans l'intervalle de temps
     sensor_data = SensorData.objects.filter(
         sensor_location__in=sensor_locations,
         timestamp__gte=start_time
     ).order_by('timestamp')
 
-    # Préparer les données pour les graphiques
-    time_labels = [data.timestamp.strftime('%Y-%m-%d %H:%M:%S') for data in sensor_data]
-    temperature_data = [data.temperature for data in sensor_data]
-    humidity_data = [data.air_humidity for data in sensor_data]
+    if not sensor_data.exists():
+        time_labels = []
+        temperature_data = []
+        humidity_data = []
+        soil_moisture_data = []
+        water_level_data = []
+        current_temperature = 0
+        current_humidity = 0
+        current_soil_moisture = 0
+        current_water_level = 0
+    else:
+        MAX_POINTS = 2000
+        total_points = sensor_data.count()
+        if total_points > MAX_POINTS:
+            step = total_points // MAX_POINTS
+            sensor_data = sensor_data[::step]
 
-    latest_data = sensor_data.last()
+        time_labels = [data.timestamp.strftime('%Y-%m-%d %H:%M:%S') for data in sensor_data]
+        temperature_data = [data.temperature for data in sensor_data]
+        humidity_data = [data.air_humidity for data in sensor_data]
+        soil_moisture_data = [data.soil_moisture for data in sensor_data]
 
-    current_temperature = latest_data.temperature if latest_data else 0
-    current_humidity = latest_data.air_humidity if latest_data else 0
+        water_level_data = []
+        if hasattr(SensorData, 'water_level'):
+            water_level_data = [data.water_level for data in sensor_data]
+
+        latest_data = sensor_data.last()
+        current_temperature = latest_data.temperature if latest_data.temperature is not None else 0
+        current_humidity = latest_data.air_humidity if latest_data.air_humidity is not None else 0
+        current_soil_moisture = latest_data.soil_moisture if latest_data.soil_moisture is not None else 0
+        current_water_level = 0
+        if hasattr(latest_data, 'water_level') and latest_data.water_level is not None:
+            current_water_level = latest_data.water_level
 
     gauges = [
         {
@@ -208,9 +229,19 @@ def graph_page(request, id):
                     'type': 'indicator',
                     'mode': 'gauge+number',
                     'value': current_temperature,
-                    'gauge': {'axis': {'range': [0, 50]}, 'bar': {'color': 'blue'}}
+                    'gauge': {
+                        'axis': {'range': [0, 50]},
+                        'bar': {'color': 'blue'},
+                        'borderwidth': 2,
+                        'bordercolor': '#888'
+                    }
                 }],
-                'layout': {'title': 'Température (°C)'}
+                'layout': {
+                    'title': 'Température (°C)',
+                    'paper_bgcolor': 'white',
+                    'plot_bgcolor': 'white',
+                    'font': {'color': '#333'}
+                }
             })
         },
         {
@@ -221,9 +252,65 @@ def graph_page(request, id):
                     'type': 'indicator',
                     'mode': 'gauge+number',
                     'value': current_humidity,
-                    'gauge': {'axis': {'range': [0, 100]}, 'bar': {'color': 'green'}}
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': 'green'},
+                        'borderwidth': 2,
+                        'bordercolor': '#888'
+                    }
                 }],
-                'layout': {'title': 'Humidité (%)'}
+                'layout': {
+                    'title': 'Humidité (%)',
+                    'paper_bgcolor': 'white',
+                    'plot_bgcolor': 'white',
+                    'font': {'color': '#333'}
+                }
+            })
+        },
+        {
+            'id': 'soilMoistureGauge',
+            'title': 'Humidité du sol',
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_soil_moisture,
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': '#8B4513'},
+                        'borderwidth': 2,
+                        'bordercolor': '#888'
+                    }
+                }],
+                'layout': {
+                    'title': 'Humidité du sol (%)',
+                    'paper_bgcolor': 'white',
+                    'plot_bgcolor': 'white',
+                    'font': {'color': '#333'}
+                }
+            })
+        },
+        {
+            'id': 'waterLevelGauge',
+            'title': 'Niveau d’eau',
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_water_level,
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': 'blue'},
+                        'borderwidth': 2,
+                        'bordercolor': '#888'
+                    }
+                }],
+                'layout': {
+                    'title': 'Niveau d’eau (%)',
+                    'paper_bgcolor': 'white',
+                    'plot_bgcolor': 'white',
+                    'font': {'color': '#333'}
+                }
             })
         },
     ]
@@ -237,29 +324,83 @@ def graph_page(request, id):
                     'x': time_labels,
                     'y': temperature_data,
                     'mode': 'lines+markers',
-                    'type': 'scatter'
+                    'type': 'scatter',
+                    'line': {'color': 'red'},
+                    'marker': {'color': 'red'}
                 }],
                 'layout': {
                     'title': 'Température (°C)',
+                    'paper_bgcolor': '#f9f9f9',
+                    'plot_bgcolor': '#f9f9f9',
+                    'font': {'color': '#333'},
                     'xaxis': {'title': 'Temps'},
-                    'yaxis': {'title': 'Température (°C)'}
+                    'yaxis': {'title': '°C'},
                 }
             })
         },
         {
             'id': 'humidityChart',
-            'title': 'Évolution de l\'humidité',
+            'title': 'Évolution de l\'humidité de l’air',
             'json': json.dumps({
                 'data': [{
                     'x': time_labels,
                     'y': humidity_data,
                     'mode': 'lines+markers',
-                    'type': 'scatter'
+                    'type': 'scatter',
+                    'line': {'color': 'blue'},
+                    'marker': {'color': 'blue'}
                 }],
                 'layout': {
                     'title': 'Humidité (%)',
+                    'paper_bgcolor': '#f9f9f9',
+                    'plot_bgcolor': '#f9f9f9',
+                    'font': {'color': '#333'},
                     'xaxis': {'title': 'Temps'},
-                    'yaxis': {'title': 'Humidité (%)'}
+                    'yaxis': {'title': '%'}
+                }
+            })
+        },
+        {
+            'id': 'soilMoistureChart',
+            'title': 'Évolution de l’humidité du sol',
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': soil_moisture_data,
+                    'mode': 'lines+markers',
+                    'type': 'scatter',
+                    'line': {'color': '#8B4513'},
+                    'marker': {'color': '#8B4513'}
+                }],
+                'layout': {
+                    'title': 'Humidité du sol (%)',
+                    'paper_bgcolor': '#f9f9f9',
+                    'plot_bgcolor': '#f9f9f9',
+                    'font': {'color': '#333'},
+                    'xaxis': {'title': 'Temps'},
+                    'yaxis': {'title': '%'}
+                }
+            })
+        },
+        {
+            'id': 'waterLevelChart',
+            'title': 'Évolution du niveau d’eau',
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': water_level_data,
+                    'mode': 'lines+markers',
+                    'type': 'scatter',
+                    'line': {'color': 'dodgerblue'},
+                    'marker': {'color': 'dodgerblue'}
+                }],
+                'layout': {
+                    'title': 'Niveau d’eau (%)',
+                    'paper_bgcolor': '#f9f9f9',
+                    'plot_bgcolor': '#f9f9f9',
+                    'font': {'color': '#333'},
+                    'xaxis': {'title': 'Temps'},
+                    'yaxis': {'title': '%'}
                 }
             })
         },
@@ -271,6 +412,7 @@ def graph_page(request, id):
         'charts': charts,
         'selected_time_range': selected_time_range
     })
+
 
 @user_passes_test(is_admin)
 @login_required(login_url='login')
