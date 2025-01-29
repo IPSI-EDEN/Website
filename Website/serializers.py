@@ -34,7 +34,10 @@ class SensorDataSerializer(serializers.ModelSerializer):
 
 class IncomingLocationSerializer(serializers.Serializer):
     location_name = serializers.CharField()
-    soil_moisture = serializers.FloatField()
+    soil_moisture = serializers.FloatField(
+        allow_null=True,  
+        required=False
+    )
 
 class IncomingDataSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
