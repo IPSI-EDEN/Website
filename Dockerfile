@@ -10,7 +10,9 @@ COPY requirements.txt .
 RUN mkdir -p /app/logs
 
 # Install required system dependencies for building Python packages
-RUN apt-get update && apt-get install -y --no-install-recommends gcc && \
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata && \
+    ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
 
 # Install the Python dependencies globally (without a virtual environment)
