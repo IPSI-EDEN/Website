@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now, timedelta, datetime
 from django.db.models import Avg, Max, Min
 from django.db.models.functions import TruncHour
 from django.conf import settings
@@ -472,8 +472,7 @@ def receive_sensor_data(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
-
-        timestamp = validated_data['timestamp']
+        timestamp = datetime.fromisoformat(validated_data['timestamp'].replace("Z", "+00:00"))
         raspberry_data = validated_data['raspberry']
         device_name = raspberry_data.get('device_name')
         locations = validated_data['locations']
@@ -533,7 +532,7 @@ def receive_sensor_data(request):
                 # Créer un SensorData pour garder l'historique
                 SensorData.objects.create(
                     sensor_location=sensor_location,
-                    timestamp=timestamp + timedelta(hours=1),
+                    timestamp=timestamp,
                     temperature=temperature,
                     air_humidity=air_humidity,
                     soil_moisture=loc_soil_moisture
