@@ -473,7 +473,7 @@ def receive_sensor_data(request):
 
         validated_data = serializer.validated_data
 
-        timestamp = validated_data['timestamp'] + timedelta(hours=1)
+        timestamp = validated_data['timestamp']
         raspberry_data = validated_data['raspberry']
         device_name = raspberry_data.get('device_name')
         locations = validated_data['locations']
@@ -533,7 +533,7 @@ def receive_sensor_data(request):
                 # Créer un SensorData pour garder l'historique
                 SensorData.objects.create(
                     sensor_location=sensor_location,
-                    timestamp=timestamp,
+                    timestamp=timestamp + timedelta(hours=1),
                     temperature=temperature,
                     air_humidity=air_humidity,
                     soil_moisture=loc_soil_moisture

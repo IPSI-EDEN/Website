@@ -93,9 +93,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'fr-fr'
+USE_TZ = True
 TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
-USE_TZ = True
 
 STATICFILES_DIRS = [
     BASE_DIR / 'Eden/static',
