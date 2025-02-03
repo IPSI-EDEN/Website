@@ -4,6 +4,9 @@ FROM python:3.11-slim
 # Set the working directory in the container
 WORKDIR /app
 
+# Set the timezone to Europe/Paris
+ENV TZ=Europe/Paris
+
 # Copy the requirements.txt into the container
 COPY requirements.txt .
 
