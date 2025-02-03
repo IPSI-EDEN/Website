@@ -456,6 +456,7 @@ def receive_sensor_data(request):
             logger.warning(f"[{request_id}] Missing encrypted data in request.")
             return Response({"error": "Données chiffrées manquantes."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Décryptage des données
         encrypted_data = base64.b64decode(encrypted_data_b64)
         nonce = encrypted_data[:12]
         ciphertext = encrypted_data[12:]
@@ -465,14 +466,18 @@ def receive_sensor_data(request):
         data = json.loads(decrypted_data.decode('utf-8'))
         logger.debug(f"[{request_id}] Decrypted data: {data}")
 
-        # Validation des données avec le nouveau serializer
+        # Validation des données
         serializer = IncomingDataSerializer(data=data)
         if not serializer.is_valid():
             logger.error(f"[{request_id}] Validation errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
+
+        # Conversion du timestamp reçu (en ISO, avec "Z" indiquant UTC) en datetime
         timestamp = datetime.fromisoformat(validated_data['timestamp'].replace("Z", "+00:00"))
+        # Le timestamp est maintenant un objet datetime en UTC.
+
         raspberry_data = validated_data['raspberry']
         device_name = raspberry_data.get('device_name')
         locations = validated_data['locations']
@@ -487,7 +492,6 @@ def receive_sensor_data(request):
             )
 
             # Récupérer ou créer le Raspberry
-            # On va considérer 'device_name' comme un pseudo device_id pour simplifier
             raspberry, created_raspberry = Raspberry.objects.get_or_create(
                 device_id=device_name,
                 defaults={
@@ -499,13 +503,11 @@ def receive_sensor_data(request):
             if created_raspberry:
                 logger.info(f"[{request_id}] Created new Raspberry device_id={raspberry.device_id}")
 
-            # Pour chaque location, on crée ou récupère un Plant associé
+            # Pour chaque emplacement, récupérer/créer le Plant et le SensorLocation, puis enregistrer les données
             for loc in locations:
                 location_name = loc['location_name']
                 loc_soil_moisture = loc['soil_moisture']
 
-                # Créer ou récupérer un Plant basé sur le nom de l'emplacement (ex: "Emplacement_1")
-                # Vous pourrez personnaliser par la suite
                 plant, _ = Plant.objects.get_or_create(
                     name=location_name,
                     defaults={
@@ -519,17 +521,14 @@ def receive_sensor_data(request):
                     }
                 )
 
-                # Récupérer ou créer le SensorLocation
                 sensor_location, _ = SensorLocation.objects.get_or_create(
                     raspberry=raspberry,
                     location_name=location_name,
                     defaults={'plant': plant}
                 )
-                # Mettre à jour l'humidité du sol sur SensorLocation (valeur actuelle)
                 sensor_location.soil_moisture = loc_soil_moisture
                 sensor_location.save()
 
-                # Créer un SensorData pour garder l'historique
                 SensorData.objects.create(
                     sensor_location=sensor_location,
                     timestamp=timestamp,
@@ -538,15 +537,14 @@ def receive_sensor_data(request):
                     soil_moisture=loc_soil_moisture
                 )
 
-        # Réponse
         logger.info(f"[{request_id}] Sensor data saved successfully.")
         raspberry_data = {
             'id': raspberry.id,
             'device_id': raspberry.device_id,
             'group': raspberry.group.name if raspberry.group else "Non Assigné",
             'active': raspberry.active,
-            'pump': True,   
-            'fan': True, 
+            'pump': True,
+            'fan': True,
         }
 
         success_message = {
@@ -566,6 +564,7 @@ def receive_sensor_data(request):
     except Exception as e:
         logger.exception(f"[{request_id}] Error processing sensor data: {e}")
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
