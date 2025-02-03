@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils.timezone import get_current_timezone
 from .models import Group, Raspberry, Plant, SensorLocation, SensorData
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -40,7 +41,7 @@ class IncomingLocationSerializer(serializers.Serializer):
     )
 
 class IncomingDataSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField()
+    timestamp = serializers.DateTimeField(default_timezone=get_current_timezone())
     raspberry = serializers.DictField()
     locations = IncomingLocationSerializer(many=True)
     temperature = serializers.FloatField()
