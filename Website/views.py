@@ -473,7 +473,7 @@ def receive_sensor_data(request):
 
         validated_data = serializer.validated_data
 
-        timestamp = validated_data['timestamp']
+        timestamp = validated_data['timestamp'] + timedelta(hours=1)
         raspberry_data = validated_data['raspberry']
         device_name = raspberry_data.get('device_name')
         locations = validated_data['locations']
