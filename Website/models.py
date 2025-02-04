@@ -58,7 +58,7 @@ class SensorLocation(models.Model):
 
 class SensorData(models.Model):
     sensor_location = models.ForeignKey(SensorLocation, on_delete=models.CASCADE, related_name='sensor_data')
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
     temperature = models.FloatField(blank=True, null=True)
     air_humidity = models.FloatField(blank=True, null=True)
     soil_moisture = models.FloatField(blank=True, null=True)
