@@ -7,6 +7,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils.timezone import now, timedelta, datetime
+from django.utils.dateparse import parse_datetime
+from django.utils import timezone
 from django.db.models import Avg, Max, Min
 from django.db.models.functions import TruncHour
 from django.conf import settings
@@ -197,7 +199,7 @@ def graph_page(request, id):
         current_soil_moisture = 0
         current_water_level = 0
     else:
-        MAX_POINTS = 2000
+        MAX_POINTS = 1000
         total_points = sensor_data.count()
         if total_points > MAX_POINTS:
             step = total_points // MAX_POINTS
@@ -474,9 +476,18 @@ def receive_sensor_data(request):
 
         validated_data = serializer.validated_data
 
-        # Conversion du timestamp reçu (en ISO, avec "Z" indiquant UTC) en datetime
-        timestamp = datetime.fromisoformat(validated_data['timestamp'].replace("Z", "+00:00"))
-        # Le timestamp est maintenant un objet datetime en UTC.
+        iso_str = validated_data['timestamp'] 
+        timestamp = parse_datetime(iso_str)
+
+        if timestamp is None:
+            iso_str = iso_str.replace("Z", "+00:00")
+            timestamp = parse_datetime(iso_str)
+
+        if timestamp is None:
+            pass
+
+        if timezone.is_naive(timestamp):
+            timestamp = timezone.make_aware(timestamp, timezone.utc)
 
         raspberry_data = validated_data['raspberry']
         device_name = raspberry_data.get('device_name')

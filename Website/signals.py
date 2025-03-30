@@ -1,4 +1,4 @@
-# your_app/signals.py
+# signals.py
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from .models import Group, DEFAULT_GROUP_NAME

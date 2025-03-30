@@ -9,7 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', website_views.home_page, name='home'),
     path('<int:id>/threshold/', website_views.threshold, name='raspberry_threshold'),
-    path('<int:id>/graphs/', website_views.graph_page, name='raspberry_detail'),
+    path('<int:id>/graphs/', website_views.graph_page, name='raspberry_charts'),
     path('raspberry/update/<int:id>/', website_views.raspberry_update, name='raspberry_update'),
     path('raspberry/delete/<int:id>/', website_views.raspberry_delete, name='raspberry_delete'),
     path('login/', website_views.login_view, name='login'),
