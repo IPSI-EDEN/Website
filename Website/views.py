@@ -476,18 +476,15 @@ def receive_sensor_data(request):
 
         validated_data = serializer.validated_data
 
-        iso_str = validated_data['timestamp'] 
-        timestamp = parse_datetime(iso_str)
+        iso_str = str(validated_data['timestamp'])  # Force string
+        if 'Z' in iso_str:
+            iso_str = iso_str.replace('Z', '+00:00')
 
-        if timestamp is None:
-            iso_str = iso_str.replace("Z", "+00:00")
-            timestamp = parse_datetime(iso_str)
-
-        if timestamp is None:
-            pass
-
-        if timezone.is_naive(timestamp):
-            timestamp = timezone.make_aware(timestamp, timezone.utc)
+        parsed_ts = parse_datetime(iso_str)
+        if not parsed_ts:
+            # parse_datetime returned None, fallback if needed or raise error
+            raise ValueError("Could not parse timestamp from ISO string.")
+        timestamp = parsed_ts
 
         raspberry_data = validated_data['raspberry']
         device_name = raspberry_data.get('device_name')
