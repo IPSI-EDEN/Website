@@ -41,7 +41,13 @@ class IncomingLocationSerializer(serializers.Serializer):
     )
 
 class IncomingDataSerializer(serializers.Serializer):
-    timestamp = serializers.DateTimeField(default_timezone=timezone.utc)
+    timestamp = serializers.DateTimeField(
+        input_formats=['%d/%m/%Y %H:%M:%S',
+                       '%Y-%m-%dT%H:%M:%S.%fZ',
+                        '%Y-%m-%dT%H:%M:%S.%f%z',
+                        '%Y-%m-%dT%H:%M:%S%z',
+        ],
+    )
     raspberry = serializers.DictField()
     locations = IncomingLocationSerializer(many=True)
     temperature = serializers.FloatField()
