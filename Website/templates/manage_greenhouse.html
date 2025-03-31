@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <h2 class="heading">Gestion de la serre – Raspberry {{ raspberry.device_id }}</h2>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Formulaire de seuils (affiché uniquement s'il y a des formulaires) -->
+  <form method="post">
+    {% csrf_token %}
+    {% if formset.management_form %}
+      {{ formset.management_form }}
+      <div class="row">
+        {% for form in formset %}
+          <div class="col-md-6 col-sm-12">
+            <div class="form-threshold">
+              <strong>{{ form.instance.name }}</strong>
+              {{ form.as_p }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if formset.total_form_count %}
+      <div class="text-center mb-3">
+        <button type="submit" class="btn btn-primary">Enregistrer les seuils</button>
+      </div>
+      {% endif %}
+    {% endif %}
+  </form>
+
+  <!-- Boutons de contrôle des équipements -->
+  <div class="d-flex justify-content-center mb-3">
+    <form method="post" class="me-2">
+      {% csrf_token %}
+      <input type="hidden" name="toggle_device" value="pump">
+      <button type="submit" class="btn btn-outline-secondary btn-device">
+        {% if raspberry.pump_state %}
+          Désactiver la pompe
+        {% else %}
+          Activer la pompe
+        {% endif %}
+      </button>
+    </form>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="toggle_device" value="fan">
+      <button type="submit" class="btn btn-outline-secondary btn-device">
+        {% if raspberry.fan_state %}
+          Désactiver le ventilateur
+        {% else %}
+          Activer le ventilateur
+        {% endif %}
+      </button>
+    </form>
+  </div>
+
+  <!-- Visualisation de la serre -->
+  <div id="greenhouse-visualization"></div>
+</div>
+<script>
+  var sensorData = {{ sensor_locations_json|safe }};
+  var greenhouseWidth = 800;
+  var greenhouseHeight = 600;
+
+  var svg = d3.select("#greenhouse-visualization")
+    .append("svg")
+    .attr("width", greenhouseWidth)
+    .attr("height", greenhouseHeight);
+
+  var xScale = d3.scaleLinear()
+    .domain([0, 100])
+    .range([50, greenhouseWidth - 50]);
+
+  var yScale = d3.scaleLinear()
+    .domain([0, 100])
+    .range([greenhouseHeight - 150, 100]);
+
+  var imageWidth = 50;
+  var imageHeight = 50;
+
+  svg.selectAll("image")
+    .data(sensorData)
+    .enter()
+    .append("image")
+    .attr("xlink:href", function(d) {
+      var healthy = d.soil_moisture >= d.plant.soil_moisture_min && d.soil_moisture <= d.plant.soil_moisture_max;
+      return healthy ? "/static/images/plant_healthy.png" : "/static/images/plant_unhealthy.png";
+    })
+    .attr("x", function(d) { return xScale(d.x_position) - imageWidth / 2; })
+    .attr("y", function(d) { return yScale(d.y_position) - imageHeight; })
+    .attr("width", imageWidth)
+    .attr("height", imageHeight)
+    .on("click", function(event, d) {
+      alert("Emplacement du capteur : " + d.location_name + "\nPlante : " + d.plant.name);
+    });
+
+  svg.selectAll("text")
+    .data(sensorData)
+    .enter()
+    .append("text")
+    .attr("x", function(d) { return xScale(d.x_position); })
+    .attr("y", function(d) { return yScale(d.y_position) - imageHeight - 5; })
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d.plant.name; })
+    .style("font-size", "12px")
+    .style("fill", "black");
+</script>
+{% endblock %}

@@ -130,49 +130,58 @@ def home_page(request):
             'error': "Une erreur s'est produite lors de la récupération des données.",
         })
 
+@user_passes_test(is_admin)
 @login_required(login_url='login')
-def threshold(request, id):
+def manage_greenhouse(request, id):
     raspberry = get_object_or_404(Raspberry, id=id)
     sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
     plants = Plant.objects.all()
 
-    if request.method == 'POST':
-        # Traitement des données du formulaire pour mettre à jour les seuils des plantes
-        forms = []
-        for plant in plants:
-            form = PlantThresholdForm(request.POST, instance=plant, prefix=str(plant.id))
-            if form.is_valid():
-                form.save()
-            forms.append(form)
-        # Rediriger ou afficher un message de succès
-        return redirect('threshold', id=raspberry.id)
-    else:
-        # Préparation des formulaires pour chaque plante
-        forms = []
-        for plant in plants:
-            form = PlantThresholdForm(instance=plant, prefix=str(plant.id))
-            forms.append(form)
-        
-        # Préparation des données des emplacements des capteurs
-        sensor_locations_data = []
-        for location in sensor_locations:
-            sensor_locations_data.append({
-                'location_name': location.location_name,
-                'plant': {
-                    'name': location.plant.name,
-                },
-                'soil_moisture': location.soil_moisture,
-                'x_position': location.x_position,
-                'y_position': location.y_position,
-            })
+    # Préparation des données pour la visualisation D3.js
+    sensor_locations_data = []
+    for location in sensor_locations:
+        sensor_locations_data.append({
+            'location_name': location.location_name,
+            'plant': {
+                'name': location.plant.name,
+                'soil_moisture_min': location.plant.soil_moisture_min,
+                'soil_moisture_max': location.plant.soil_moisture_max,
+            },
+            'soil_moisture': location.soil_moisture,
+            'x_position': location.x_position,
+            'y_position': location.y_position,
+        })
 
-        context = {
-            'raspberry': raspberry,
-            'sensor_locations': sensor_locations,
-            'forms': forms,
-            'sensor_locations_json': json.dumps(sensor_locations_data),
-        }
-        return render(request, 'threshold.html', context)
+    # Création d'un formset pour gérer les formulaires de seuils des plantes
+    PlantFormSet = modelformset_factory(Plant, form=PlantThresholdForm, extra=0)
+
+    # Traitement spécifique pour le basculement des équipements
+    if request.method == 'POST' and 'toggle_device' in request.POST:
+        device = request.POST.get('toggle_device')
+        if device == 'pump':
+            raspberry.pump_state = not raspberry.pump_state
+        elif device == 'fan':
+            raspberry.fan_state = not raspberry.fan_state
+        raspberry.save()
+        messages.success(request, f"L'état de {device} a été modifié.")
+        return redirect('raspberry_threshold', id=raspberry.id)
+
+    # Traitement du formset pour les seuils
+    if request.method == 'POST':
+        formset = PlantFormSet(request.POST, queryset=plants)
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, "Les seuils des plantes ont été mis à jour.")
+            return redirect('threshold', id=raspberry.id)
+    else:
+        formset = PlantFormSet(queryset=plants)
+
+    context = {
+        'raspberry': raspberry,
+        'formset': formset,
+        'sensor_locations_json': json.dumps(sensor_locations_data),
+    }
+    return render(request, 'manage_greenhouse.html', context)
 
 @login_required(login_url='login')
 def graph_page(request, id):
@@ -443,7 +452,25 @@ def raspberry_delete(request, id):
     raspberry = get_object_or_404(Raspberry, id=id)
     raspberry.delete()
     return redirect('home')
-    
+
+@user_passes_test(is_admin)
+@login_required(login_url='login')
+def toggle_device(request, id, device):
+    raspberry = get_object_or_404(Raspberry, id=id)
+    if request.method == 'POST':
+        if device == 'pump':
+            raspberry.pump_state = not raspberry.pump_state
+            messages.success(request, "L'état de la pompe a été modifié.")
+        elif device == 'fan':
+            raspberry.fan_state = not raspberry.fan_state
+            messages.success(request, "L'état du ventilateur a été modifié.")
+        else:
+            messages.error(request, "Appareil inconnu.")
+        raspberry.save()
+    else:
+        messages.error(request, "Méthode non autorisée.")
+    # Rediriger vers la page de gestion de la serre
+    return redirect('manage_greenhouse', id=raspberry.id)
 
 @csrf_exempt
 @api_view(['POST'])
@@ -544,8 +571,8 @@ def receive_sensor_data(request):
             'device_id': raspberry.device_id,
             'group': raspberry.group.name if raspberry.group else "Non Assigné",
             'active': raspberry.active,
-            'pump': True,
-            'fan': True,
+            'pump': raspberry.pump_state,
+            'fan': raspberry.fan_state,
         }
 
         success_message = {

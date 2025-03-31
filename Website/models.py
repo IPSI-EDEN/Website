@@ -32,6 +32,8 @@ class Raspberry(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, related_name='raspberries')
     location_description = models.TextField(blank=True, null=True)
     active = models.BooleanField(default=True)
+    pump_state = models.BooleanField(default=False)
+    fan_state = models.BooleanField(default=False)
     STATUS_CHOICES = [
         ('unassigned', 'Non Assigné'),
         ('assigned', 'Assigné'),

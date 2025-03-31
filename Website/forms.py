@@ -1,5 +1,5 @@
 from django import forms
-from django.forms.models import inlineformset_factory
+from django.forms.models import inlineformset_factory , modelformset_factory
 from .models import *
 
 class RaspberryForm(forms.ModelForm):
