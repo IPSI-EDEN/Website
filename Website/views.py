@@ -203,7 +203,9 @@ def graph_page(request, id):
         total_points = sensor_data.count()
         if total_points > MAX_POINTS:
             step = total_points // MAX_POINTS
-            sensor_data = sensor_data[::step]
+            sensor_ids = list(sensor_data.values_list('pk', flat=True))
+            sensor_ids = sensor_ids[::step]
+            sensor_data = SensorData.objects.filter(pk__in=sensor_ids).order_by('timestamp')
 
         time_labels = [data.timestamp.strftime('%Y-%m-%d %H:%M:%S') for data in sensor_data]
         temperature_data = [data.temperature for data in sensor_data]
