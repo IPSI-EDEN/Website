@@ -61,65 +61,129 @@ def graph_page(request, id):
     end_time = now()
     start_time = end_time - timedelta(hours=selected_time_range)
 
+    # On récupère l'ensemble des données pour ce Raspberry & la période
     sensor_data = SensorData.objects.filter(
         sensor_location__in=sensor_locations,
         timestamp__gte=start_time
     ).order_by('timestamp')
 
+    # Prépare des listes vides par défaut
+    temperature_data = []
+    humidity_data = []
+    water_level_data = []
+    time_labels = []
+    current_temperature = 0
+    current_humidity = 0
+    current_water_level = 0
+
+    # -- NOUVEAU -- On va construire un dictionnaire pour regrouper les données d'humidité du sol
+    # par "location" (= par capteur)
+    soil_moisture_dict = {}  # clef = sensor_location.id, valeur = { 'name': x, 'timestamps': [], 'values': [] }
+
+    for location in sensor_locations:
+        soil_moisture_dict[location.id] = {
+            'name': location.location_name,
+            'timestamps': [],
+            'values': []
+        }
+
     if not sensor_data.exists():
-        # S’il n’y a aucune donnée, on initialise simplement des listes vides
-        time_labels = []
-        temperature_data = []
-        humidity_data = []
-        soil_moisture_data = []
-        water_level_data = []
-        current_temperature = 0
-        current_humidity = 0
-        current_soil_moisture = 0
-        current_water_level = 0
+        # Aucune donnée : toutes les listes restent vides
+        pass
     else:
-        # On limite à MAX_POINTS pour éviter de surcharger les graphiques
+        # Limiter à MAX_POINTS pour éviter de surcharger les graphiques
         MAX_POINTS = 200
         total_points = sensor_data.count()
         if total_points > MAX_POINTS:
             step = total_points // MAX_POINTS
             sensor_ids = list(sensor_data.values_list('pk', flat=True))
-            sensor_ids = sensor_ids[::step]
+            sensor_ids = sensor_ids[::step]  # On ne garde qu’un point sur "step"
             sensor_data = SensorData.objects.filter(pk__in=sensor_ids).order_by('timestamp')
 
-        time_labels = [(data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
-                       for data in sensor_data]
-        temperature_data = [data.temperature for data in sensor_data]
-        humidity_data = [data.air_humidity for data in sensor_data]
-        soil_moisture_data = [data.soil_moisture for data in sensor_data]
+        # On parcourt tous les SensorData pour alimenter les courbes
+        for data in sensor_data:
+            # Convertit le timestamp en chaîne pour l'axe X
+            t_str = (data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
 
-        # Vérifier si l'attribut water_level existe et le récupérer
-        water_level_data = []
-        if hasattr(SensorData, 'water_level'):
-            water_level_data = [data.water_level for data in sensor_data]
+            # Température/air_humidity/water_level restent uniques (on pourrait prendre la moyenne, etc.)
+            temperature_data.append(data.temperature if data.temperature is not None else None)
+            humidity_data.append(data.air_humidity if data.air_humidity is not None else None)
 
+            if hasattr(data, 'water_level'):
+                water_level_data.append(data.water_level if data.water_level is not None else None)
+            else:
+                water_level_data.append(None)
+
+            time_labels.append(t_str)
+
+            # -- Partie Soil Moisture : on ajoute la valeur dans le bon "sensor_location"
+            loc_id = data.sensor_location_id
+            soil_moisture_value = data.soil_moisture if data.soil_moisture is not None else None
+            soil_moisture_dict[loc_id]['timestamps'].append(t_str)
+            soil_moisture_dict[loc_id]['values'].append(soil_moisture_value)
+
+        # On récupère le dernier point
         latest_data = sensor_data.last()
         current_temperature = latest_data.temperature if latest_data.temperature is not None else 0
         current_humidity = latest_data.air_humidity if latest_data.air_humidity is not None else 0
-        current_soil_moisture = latest_data.soil_moisture if latest_data.soil_moisture is not None else 0
-        current_water_level = 0
         if hasattr(latest_data, 'water_level') and latest_data.water_level is not None:
             current_water_level = latest_data.water_level
 
-    # On détermine si on peut fixer la plage de l’axe x ou non
-    if len(time_labels) > 1:
+    # =============================
+    # Construit les traces d’humidité du sol
+    # =============================
+    soil_moisture_traces = []
+    for loc_id, info in soil_moisture_dict.items():
+        # S’il n’y a pas de timestamps (pas de data), on ignore
+        if not info['timestamps']:
+            continue
+        # Chaque location = une courbe (trace) sur le même graphique
+        soil_moisture_traces.append({
+            'x': info['timestamps'],
+            'y': info['values'],
+            'mode': 'lines+markers',
+            'type': 'scatter',
+            'name': info['name']  # Nom d'emplacement/capteur
+        })
+
+    # =============================
+    # Calcule la moyenne pour la jauge
+    # =============================
+    # On parcourt toutes les locations, on prend la DERNIÈRE valeur si disponible
+    sum_soil = 0
+    count_soil = 0
+    for loc_id, info in soil_moisture_dict.items():
+        if info['values']:
+            last_val = info['values'][-1]
+            if last_val is not None:
+                sum_soil += last_val
+                count_soil += 1
+
+    if count_soil > 0:
+        current_soil_moisture = sum_soil / count_soil
+    else:
+        current_soil_moisture = 0
+
+    # =============================
+    # GESTION DU TITRE & AXE X
+    # =============================
+    if sensor_data.exists() and len(time_labels) > 1:
         x_range = [time_labels[0], time_labels[-1]]
         auto_x = False
     else:
         x_range = []
-        auto_x = True  # Pas de valeurs ou une seule valeur => on laisse l’autorange
+        auto_x = True
 
-    # Si aucune donnée, on peut personnaliser les titres pour indiquer "Aucune donnée"
+    # Titres des graphiques
     titre_temperature = "Température (°C)" if temperature_data else "Aucune donnée disponible"
     titre_humidite = "Humidité (%)" if humidity_data else "Aucune donnée disponible"
-    titre_sol = "Humidité du sol (%)" if soil_moisture_data else "Aucune donnée disponible"
+    # On vérifie si on a au moins une trace d’humidité du sol
+    titre_sol = "Évolution de l’humidité du sol" if soil_moisture_traces else "Aucune donnée disponible"
     titre_niveau_eau = "Niveau d’eau (%)" if water_level_data else "Aucune donnée disponible"
 
+    # =============================
+    # Prépare les « gauges » (jauges)
+    # =============================
     gauges = [
         {
             'id': 'temperatureGauge',
@@ -174,6 +238,7 @@ def graph_page(request, id):
                 'data': [{
                     'type': 'indicator',
                     'mode': 'gauge+number',
+                    # ICI => la moyenne de tous les capteurs
                     'value': current_soil_moisture,
                     'gauge': {
                         'axis': {'range': [0, 100]},
@@ -215,6 +280,11 @@ def graph_page(request, id):
         },
     ]
 
+    # =============================
+    # Prépare les « charts » (diagrammes linéaires)
+    # =============================
+
+    # Chart de la température
     charts = [
         {
             'id': 'temperatureChart',
@@ -280,14 +350,8 @@ def graph_page(request, id):
             'id': 'soilMoistureChart',
             'title': 'Évolution de l’humidité du sol',
             'json': json.dumps({
-                'data': [{
-                    'x': time_labels,
-                    'y': soil_moisture_data,
-                    'mode': 'lines+markers',
-                    'type': 'scatter',
-                    'line': {'color': '#8B4513'},
-                    'marker': {'color': '#8B4513'}
-                }],
+                # ICI => on fournit la liste de "traces" pour chaque location
+                'data': soil_moisture_traces,
                 'layout': {
                     'title': titre_sol,
                     'paper_bgcolor': '#f9f9f9',

@@ -35,17 +35,19 @@ class SensorDataSerializer(serializers.ModelSerializer):
 
 class IncomingLocationSerializer(serializers.Serializer):
     location_name = serializers.CharField()
-    soil_moisture = serializers.FloatField(
-        allow_null=True,  
-        required=False
+    soil_moisture = serializers.ListField(
+        child=serializers.FloatField(),
+        required=False,
+        allow_empty=True
     )
 
 class IncomingDataSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField(
-        input_formats=['%d/%m/%Y %H:%M:%S',
-                       '%Y-%m-%dT%H:%M:%S.%fZ',
-                        '%Y-%m-%dT%H:%M:%S.%f%z',
-                        '%Y-%m-%dT%H:%M:%S%z',
+        input_formats=[
+            '%d/%m/%Y %H:%M:%S',
+            '%Y-%m-%dT%H:%M:%S.%fZ',
+            '%Y-%m-%dT%H:%M:%S.%f%z',
+            '%Y-%m-%dT%H:%M:%S%z',
         ],
     )
     raspberry = serializers.DictField()

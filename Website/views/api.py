@@ -5,34 +5,23 @@ from .home import *
 @permission_classes([AllowAny])
 def receive_sensor_data(request):
     request_id = str(uuid.uuid4())
-    logger.debug(f"[{request_id}] Starting receive_sensor_data. Method={request.method}")
-
     try:
         encrypted_data_b64 = request.data.get('encrypted')
-        logger.info(f"[{request_id}] Received encrypted data payload.")
-
         if not encrypted_data_b64:
-            logger.warning(f"[{request_id}] Missing encrypted data in request.")
             return Response({"error": "Données chiffrées manquantes."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Décryptage des données
         encrypted_data = base64.b64decode(encrypted_data_b64)
         nonce = encrypted_data[:12]
         ciphertext = encrypted_data[12:]
-
         aesgcm = AESGCM(settings.AES_SECRET_KEY)
         decrypted_data = aesgcm.decrypt(nonce, ciphertext, None)
         data = json.loads(decrypted_data.decode('utf-8'))
-        logger.debug(f"[{request_id}] Decrypted data: {data}")
 
-        # Validation des données
         serializer = IncomingDataSerializer(data=data)
         if not serializer.is_valid():
-            logger.error(f"[{request_id}] Validation errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
-
         timestamp = validated_data['timestamp']
         raspberry_data = validated_data['raspberry']
         device_name = raspberry_data.get('device_name')
@@ -41,13 +30,11 @@ def receive_sensor_data(request):
         air_humidity = validated_data['air_humidity']
 
         with transaction.atomic():
-            # Récupérer ou créer le groupe par défaut
             group, _ = Group.objects.get_or_create(
                 name=DEFAULT_GROUP_NAME,
                 defaults={'description': "Default group for unassigned Raspberries."}
             )
 
-            # Récupérer ou créer le Raspberry
             raspberry, created_raspberry = Raspberry.objects.get_or_create(
                 device_id=device_name,
                 defaults={
@@ -56,13 +43,10 @@ def receive_sensor_data(request):
                     'status': 'unassigned'
                 }
             )
-            if created_raspberry:
-                logger.info(f"[{request_id}] Created new Raspberry device_id={raspberry.device_id}")
 
-            # Pour chaque emplacement, récupérer/créer le Plant et le SensorLocation, puis enregistrer les données
             for loc in locations:
                 location_name = loc['location_name']
-                loc_soil_moisture = loc['soil_moisture']
+                soil_moisture_values = loc.get('soil_moisture', [])  
 
                 plant, _ = Plant.objects.get_or_create(
                     name=location_name,
@@ -82,7 +66,13 @@ def receive_sensor_data(request):
                     location_name=location_name,
                     defaults={'plant': plant}
                 )
-                sensor_location.soil_moisture = loc_soil_moisture
+
+                if soil_moisture_values:
+                    avg_moisture = sum(soil_moisture_values) / len(soil_moisture_values)
+                else:
+                    avg_moisture = None
+
+                sensor_location.soil_moisture = avg_moisture
                 sensor_location.save()
 
                 SensorData.objects.create(
@@ -90,35 +80,31 @@ def receive_sensor_data(request):
                     timestamp=timestamp,
                     temperature=temperature,
                     air_humidity=air_humidity,
-                    soil_moisture=loc_soil_moisture
+                    soil_moisture=soil_moisture_values 
                 )
 
-        logger.info(f"[{request_id}] Sensor data saved successfully.")
-        raspberry_data = {
-            'id': raspberry.id,
-            'device_id': raspberry.device_id,
-            'group': raspberry.group.name if raspberry.group else "Non Assigné",
-            'active': raspberry.active,
-            'pump': raspberry.pump_state,
-            'fan': raspberry.fan_state,
-        }
-
+        # Préparer la réponse chiffrée
         success_message = {
             "message": "Données enregistrées avec succès.",
-            "raspberry": raspberry_data
+            "raspberry": {
+                'id': raspberry.id,
+                'device_id': raspberry.device_id,
+                'group': raspberry.group.name if raspberry.group else "Non Assigné",
+                'active': raspberry.active,
+                'pump': raspberry.pump_state,
+                'fan': raspberry.fan_state,
+            }
         }
 
-        nonce = os.urandom(12)
+        nonce_resp = os.urandom(12)
         data_bytes = json.dumps(success_message).encode('utf-8')
-        ciphertext = aesgcm.encrypt(nonce, data_bytes, None)
-        encrypted_data = nonce + ciphertext
-        encrypted_data_b64 = base64.b64encode(encrypted_data).decode('utf-8')
+        ciphertext_resp = aesgcm.encrypt(nonce_resp, data_bytes, None)
+        encrypted_data_resp = nonce_resp + ciphertext_resp
+        encrypted_data_b64_resp = base64.b64encode(encrypted_data_resp).decode('utf-8')
 
-        logger.debug(f"[{request_id}] Sending encrypted response back.")
-        return Response({"encrypted": encrypted_data_b64}, status=status.HTTP_201_CREATED)
+        return Response({"encrypted": encrypted_data_b64_resp}, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        logger.exception(f"[{request_id}] Error processing sensor data: {e}")
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
 

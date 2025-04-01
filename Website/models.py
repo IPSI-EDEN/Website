@@ -13,18 +13,15 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
-class Plant(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True, null=True)
-    temperature_min = models.FloatField(help_text="Minimum temperature threshold", default=10.0)
-    temperature_max = models.FloatField(help_text="Maximum temperature threshold", default=35.0)
-    humidity_min = models.FloatField(help_text="Minimum air humidity threshold", default=30.0)
-    humidity_max = models.FloatField(help_text="Maximum air humidity threshold", default=80.0)
-    soil_moisture_min = models.FloatField(help_text="Minimum soil moisture threshold", default=20.0)
-    soil_moisture_max = models.FloatField(help_text="Maximum soil moisture threshold", default=70.0)
+class UserGroup(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_groups')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='user_groups')
+
+    class Meta:
+        unique_together = ('user', 'group')
 
     def __str__(self):
-        return self.name
+        return f"{self.user.username} in {self.group.name}"
 
 class Raspberry(models.Model):
     device_id = models.CharField(max_length=100, unique=True)
@@ -32,17 +29,25 @@ class Raspberry(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, related_name='raspberries')
     location_description = models.TextField(blank=True, null=True)
     active = models.BooleanField(default=True)
+    status = models.CharField(max_length=50, default='unassigned')
     pump_state = models.BooleanField(default=False)
     fan_state = models.BooleanField(default=False)
-    STATUS_CHOICES = [
-        ('unassigned', 'Non Assigné'),
-        ('assigned', 'Assigné'),
-        ('offline', 'Hors Ligne'),
-    ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unassigned')
 
     def __str__(self):
-        return f"Raspberry {self.device_id} in {self.group.name if self.group else 'No Group'}"
+        return f"Raspberry: {self.device_id}"
+
+class Plant(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    temperature_min = models.FloatField(blank=True, null=True)
+    temperature_max = models.FloatField(blank=True, null=True)
+    humidity_min = models.FloatField(blank=True, null=True)
+    humidity_max = models.FloatField(blank=True, null=True)
+    soil_moisture_min = models.FloatField(blank=True, null=True)
+    soil_moisture_max = models.FloatField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 class SensorLocation(models.Model):
     raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='sensor_locations')
@@ -63,44 +68,8 @@ class SensorData(models.Model):
     timestamp = models.DateTimeField()
     temperature = models.FloatField(blank=True, null=True)
     air_humidity = models.FloatField(blank=True, null=True)
-    soil_moisture = models.FloatField(blank=True, null=True)
+    soil_moisture = models.JSONField(blank=True, null=True, help_text="Ensemble des valeurs d'humidité du sol")
     water_level = models.FloatField(blank=True, null=True)
 
     def __str__(self):
         return f"Data at {self.sensor_location} on {self.timestamp}"
-
-class Action(models.Model):
-    raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='actions')
-    timestamp = models.DateTimeField(auto_now_add=True)
-    ACTION_TYPES = [
-        ('ventilation', 'Ventilation'),
-        ('irrigation', 'Irrigation'),
-    ]
-    STATUS_CHOICES = [
-        ('success', 'Success'),
-        ('failed', 'Failed'),
-        ('pending', 'Pending'),
-    ]
-    action_type = models.CharField(max_length=50, choices=ACTION_TYPES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-
-    def __str__(self):
-        return f"{self.action_type} at {self.raspberry.device_id} on {self.timestamp}"
-
-class DataPayload(models.Model):
-    raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='data_payloads')
-    timestamp = models.DateTimeField(auto_now_add=True)
-    payload = models.JSONField()
-
-    def __str__(self):
-        return f"Payload from {self.raspberry.device_id} on {self.timestamp}"
-
-class UserGroup(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_groups')
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='user_groups')
-
-    class Meta:
-        unique_together = ('user', 'group')
-
-    def __str__(self):
-        return f"{self.user.username} in {self.group.name}"
