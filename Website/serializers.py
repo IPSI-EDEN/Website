@@ -35,10 +35,9 @@ class SensorDataSerializer(serializers.ModelSerializer):
 
 class IncomingLocationSerializer(serializers.Serializer):
     location_name = serializers.CharField()
-    soil_moisture = serializers.ListField(
-        child=serializers.FloatField(),
+    soil_moisture = serializers.FloatField(
         required=False,
-        allow_empty=True
+        allow_null=True
     )
 
 class IncomingDataSerializer(serializers.Serializer):
@@ -54,3 +53,4 @@ class IncomingDataSerializer(serializers.Serializer):
     locations = IncomingLocationSerializer(many=True)
     temperature = serializers.FloatField()
     air_humidity = serializers.FloatField()
+    water_level = serializers.FloatField()
