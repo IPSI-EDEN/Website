@@ -67,6 +67,7 @@ def graph_page(request, id):
     ).order_by('timestamp')
 
     if not sensor_data.exists():
+        # S’il n’y a aucune donnée, on initialise simplement des listes vides
         time_labels = []
         temperature_data = []
         humidity_data = []
@@ -77,7 +78,8 @@ def graph_page(request, id):
         current_soil_moisture = 0
         current_water_level = 0
     else:
-        MAX_POINTS = 1000
+        # On limite à MAX_POINTS pour éviter de surcharger les graphiques
+        MAX_POINTS = 200
         total_points = sensor_data.count()
         if total_points > MAX_POINTS:
             step = total_points // MAX_POINTS
@@ -85,11 +87,13 @@ def graph_page(request, id):
             sensor_ids = sensor_ids[::step]
             sensor_data = SensorData.objects.filter(pk__in=sensor_ids).order_by('timestamp')
 
-        time_labels = [(data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S') for data in sensor_data]
+        time_labels = [(data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
+                       for data in sensor_data]
         temperature_data = [data.temperature for data in sensor_data]
         humidity_data = [data.air_humidity for data in sensor_data]
         soil_moisture_data = [data.soil_moisture for data in sensor_data]
 
+        # Vérifier si l'attribut water_level existe et le récupérer
         water_level_data = []
         if hasattr(SensorData, 'water_level'):
             water_level_data = [data.water_level for data in sensor_data]
@@ -102,8 +106,19 @@ def graph_page(request, id):
         if hasattr(latest_data, 'water_level') and latest_data.water_level is not None:
             current_water_level = latest_data.water_level
 
-    # Définir les plages fixes pour l'axe x uniquement si time_labels est non vide
-    x_range = [time_labels[0], time_labels[-1]] if time_labels else []
+    # On détermine si on peut fixer la plage de l’axe x ou non
+    if len(time_labels) > 1:
+        x_range = [time_labels[0], time_labels[-1]]
+        auto_x = False
+    else:
+        x_range = []
+        auto_x = True  # Pas de valeurs ou une seule valeur => on laisse l’autorange
+
+    # Si aucune donnée, on peut personnaliser les titres pour indiquer "Aucune donnée"
+    titre_temperature = "Température (°C)" if temperature_data else "Aucune donnée disponible"
+    titre_humidite = "Humidité (%)" if humidity_data else "Aucune donnée disponible"
+    titre_sol = "Humidité du sol (%)" if soil_moisture_data else "Aucune donnée disponible"
+    titre_niveau_eau = "Niveau d’eau (%)" if water_level_data else "Aucune donnée disponible"
 
     gauges = [
         {
@@ -214,14 +229,14 @@ def graph_page(request, id):
                     'marker': {'color': 'red'}
                 }],
                 'layout': {
-                    'title': 'Température (°C)',
+                    'title': titre_temperature,
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
                     'xaxis': {
                         'title': 'Temps',
                         'range': x_range,
-                        'autorange': False
+                        'autorange': auto_x
                     },
                     'yaxis': {
                         'title': '°C',
@@ -244,14 +259,14 @@ def graph_page(request, id):
                     'marker': {'color': 'blue'}
                 }],
                 'layout': {
-                    'title': 'Humidité (%)',
+                    'title': titre_humidite,
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
                     'xaxis': {
                         'title': 'Temps',
                         'range': x_range,
-                        'autorange': False
+                        'autorange': auto_x
                     },
                     'yaxis': {
                         'title': '%',
@@ -274,14 +289,14 @@ def graph_page(request, id):
                     'marker': {'color': '#8B4513'}
                 }],
                 'layout': {
-                    'title': 'Humidité du sol (%)',
+                    'title': titre_sol,
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
                     'xaxis': {
                         'title': 'Temps',
                         'range': x_range,
-                        'autorange': False
+                        'autorange': auto_x
                     },
                     'yaxis': {
                         'title': '%',
@@ -304,14 +319,14 @@ def graph_page(request, id):
                     'marker': {'color': 'dodgerblue'}
                 }],
                 'layout': {
-                    'title': 'Niveau d’eau (%)',
+                    'title': titre_niveau_eau,
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
                     'xaxis': {
                         'title': 'Temps',
                         'range': x_range,
-                        'autorange': False
+                        'autorange': auto_x
                     },
                     'yaxis': {
                         'title': '%',
