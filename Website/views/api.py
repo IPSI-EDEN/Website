@@ -8,6 +8,7 @@ def receive_sensor_data(request):
     try:
         encrypted_data_b64 = request.data.get('encrypted')
         if not encrypted_data_b64:
+            logger.error(f"[{request_id}] Missing encrypted data.")
             return Response({"error": "Données chiffrées manquantes."}, status=status.HTTP_400_BAD_REQUEST)
 
         encrypted_data = base64.b64decode(encrypted_data_b64)
