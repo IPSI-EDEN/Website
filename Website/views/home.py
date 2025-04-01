@@ -114,7 +114,7 @@ def home_page(request):
                 'group': raspberry.group.name if raspberry.group else "Non Assigné",
                 'location': raspberry.location_description or "Non spécifié",
                 'status': status,
-                'last_data': raspberry.last_data.strftime('%Y-%m-%d %H:%M:%S') if raspberry.last_data else "Aucune donnée",
+                'last_data': (raspberry.last_data + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S') if raspberry.last_data else "Aucune donnée",
             })
 
         logger.info(f"[{request_id}] Rendered home_page for User={user} with {len(raspberry_status)} raspberries.")
