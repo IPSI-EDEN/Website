@@ -126,7 +126,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Si la plage de temps est supérieure à 24h, on affiche la date
+    // Si la plage de temps est supérieure à 24h, on affiche la date sur l'axe X
     var includeDate = {{ selected_time_range }} > 24;
 
     function initializePlots() {
@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Initialisation des graphiques linéaires
         {% for chart in charts %}
         var chartConfig = {{ chart.json|safe }};
+        // Pour tous les graphiques, on applique un axe X en mode date
         Plotly.newPlot('{{ chart.id }}', chartConfig.data, {
             ...chartConfig.layout,
             template: 'plotly_white',
@@ -187,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(data => {
             if (data.length > 0) {
-                // TODO: mettre à jour les graphiques et jauges avec les nouvelles données
+                // TODO : mettre à jour dynamiquement les graphiques et jauges avec les nouvelles données
             }
         })
         .catch(error => {

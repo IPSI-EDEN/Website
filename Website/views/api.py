@@ -34,7 +34,7 @@ def receive_sensor_data(request):
         validated_data = serializer.validated_data
         timestamp = validated_data['timestamp']
         device_name = validated_data['raspberry'].get('device_name')
-        locations = validated_data['locations']  # liste de { location_name, soil_moisture (float) }
+        locations = validated_data['locations'] 
         temperature = validated_data['temperature']
         air_humidity = validated_data['air_humidity']
         water_level = validated_data.get('water_level')  # si vous l'avez dans le serializer
@@ -74,7 +74,7 @@ def receive_sensor_data(request):
                     soil_moisture=soil_val,
                     water_level=water_level
                 )
-
+        
         # Réponse (chiffrée) de succès
         success_message = {
             "message": "Données enregistrées avec succès.",

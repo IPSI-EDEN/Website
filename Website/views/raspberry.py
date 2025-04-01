@@ -152,7 +152,7 @@ def graph_page(request, id):
                     'value': current_temperature,
                     'gauge': {'axis': {'range': [-10, 50]}}
                 }],
-                'layout': {'title': 'Température'}
+                'layout': {'title': 'Température', 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         },
         {
@@ -165,7 +165,7 @@ def graph_page(request, id):
                     'value': current_humidity,
                     'gauge': {'axis': {'range': [0, 100]}}
                 }],
-                'layout': {'title': 'Humidité'}
+                'layout': {'title': 'Humidité', 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         },
         {
@@ -178,7 +178,7 @@ def graph_page(request, id):
                     'value': current_soil_moisture,
                     'gauge': {'axis': {'range': [0, 100]}}
                 }],
-                'layout': {'title': 'Humidité du sol (moy)'}
+                'layout': {'title': 'Humidité du sol (moy)', 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         },
         {
@@ -191,12 +191,12 @@ def graph_page(request, id):
                     'value': current_water_level,
                     'gauge': {'axis': {'range': [0, 100]}}
                 }],
-                'layout': {'title': "Niveau d’eau"}
+                'layout': {'title': "Niveau d’eau", 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         }
     ]
 
-    # Préparer les "charts" (les graphiques linéaires)
+    # Préparer les "charts" (graphiques linéaires) avec des axes fixes et marges
     charts = [
         {
             'id': 'temperatureChart',
@@ -208,7 +208,11 @@ def graph_page(request, id):
                     'mode': 'lines+markers',
                     'type': 'scatter'
                 }],
-                'layout': {'title': 'Évolution température (°C)'}
+                'layout': {
+                    'title': 'Évolution température (°C)',
+                    'yaxis': {'range': [-10, 50]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
             })
         },
         {
@@ -221,7 +225,11 @@ def graph_page(request, id):
                     'mode': 'lines+markers',
                     'type': 'scatter'
                 }],
-                'layout': {"title": "Évolution humidité de l'air (%)"}
+                'layout': {
+                    'title': "Évolution humidité de l'air (%)",
+                    'yaxis': {'range': [0, 100]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
             })
         },
         {
@@ -234,7 +242,11 @@ def graph_page(request, id):
                     'mode': 'lines+markers',
                     'type': 'scatter'
                 }],
-                'layout': {"title": "Niveau d'eau (%)"}
+                'layout': {
+                    'title': "Niveau d'eau (%)",
+                    'yaxis': {'range': [0, 100]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
             })
         },
         {
@@ -242,7 +254,11 @@ def graph_page(request, id):
             'title': "Évolution de l'humidité du sol",
             'json': json.dumps({
                 'data': soil_moisture_traces,
-                'layout': {"title": "Évolution de l'humidité du sol"}
+                'layout': {
+                    'title': "Évolution de l'humidité du sol",
+                    'yaxis': {'range': [0, 100]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
             })
         }
     ]
