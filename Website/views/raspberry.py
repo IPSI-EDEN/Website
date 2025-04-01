@@ -187,7 +187,7 @@ def graph_page(request, id):
         },
         {
             'id': 'soilMoistureGauge',
-            'title': 'Humidité du sol (moy)',
+            'title': 'Humidité du sol',
             'json': json.dumps({
                 'data': [{
                     'type': 'indicator',
