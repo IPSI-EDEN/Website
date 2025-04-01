@@ -20,6 +20,7 @@ def receive_sensor_data(request):
 
         serializer = IncomingDataSerializer(data=data)
         if not serializer.is_valid():
+            logger.error(f"[{request_id}] Invalid data: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
