@@ -137,7 +137,6 @@ def get_latest_sensor_data(request, raspberry_id):
         ).order_by('timestamp')
 
         serializer = SensorDataSerializer(sensor_data, many=True)
-        logger.info(f"[{request_id}] Returning {sensor_data.count()} records of SensorData for Raspberry {raspberry_id} to User={request.user}.")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Exception as e:

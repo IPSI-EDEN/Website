@@ -131,6 +131,7 @@ def graph_page(request, id):
         }
         soil_moisture_traces.append(trace)
 
+    logger.debug(f"Soil moisture traces: {soil_moisture_traces}")
     # Calculer la moyenne de la dernière valeur relevée pour chaque capteur de sol
     sum_soil = 0
     count_soil = 0
@@ -274,7 +275,7 @@ def graph_page(request, id):
         },
         {
             'id': 'soilChart',
-            'title': "Évolution de l'humidité du sol",
+            'title': "Évolution de l'humidité du sol (%)",
             'json': json.dumps({
                 'data': soil_moisture_traces,
                 'layout': {
