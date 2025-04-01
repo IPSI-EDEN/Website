@@ -52,7 +52,7 @@ class Plant(models.Model):
 class SensorLocation(models.Model):
     raspberry = models.ForeignKey(Raspberry, on_delete=models.CASCADE, related_name='sensor_locations')
     location_name = models.CharField(max_length=100)  
-    plant = models.ForeignKey(Plant, on_delete=models.CASCADE, related_name='sensor_locations')
+    plant = models.ForeignKey(Plant, on_delete=models.CASCADE, related_name='sensor_locations', blank=True, null=True)
     soil_moisture = models.FloatField(blank=True, null=True, help_text="Current soil moisture level")
     x_position = models.FloatField(help_text="Position X dans la serre", blank=True, null=True)
     y_position = models.FloatField(help_text="Position Y dans la serre", blank=True, null=True)

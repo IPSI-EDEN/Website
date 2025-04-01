@@ -54,6 +54,7 @@ def receive_sensor_data(request):
                 sensor_location, _ = SensorLocation.objects.get_or_create(
                     raspberry=raspberry,
                     location_name=location_name
+                    
                 )
                 sensor_location.soil_moisture = soil_val
                 sensor_location.save()
