@@ -104,15 +104,18 @@ def graph_page(request, id):
     water_list = []
 
     for data in sensor_data_list:
+        # Appliquer le décalage de 2 heures
         t_str = (data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
         time_labels.append(t_str)
         temperature_list.append(data.temperature if data.temperature is not None else None)
         humidity_list.append(data.air_humidity if data.air_humidity is not None else None)
         water_list.append(data.water_level if data.water_level is not None else None)
 
-        # Remplir les données pour le sol
+        # Préparer les données du sol en normalisant la valeur
         loc_id = data.sensor_location_id
         soil_val = data.soil_moisture if data.soil_moisture is not None else 0
+        if isinstance(soil_val, list):
+            soil_val = soil_val[0] if soil_val else 0
         soil_data_dict[loc_id]['timestamps'].append(t_str)
         soil_data_dict[loc_id]['values'].append(soil_val)
 
