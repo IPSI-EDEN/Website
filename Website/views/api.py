@@ -23,6 +23,8 @@ def receive_sensor_data(request):
         decrypted_data = aesgcm.decrypt(nonce, ciphertext, None)
         data = json.loads(decrypted_data.decode('utf-8'))
 
+        logger.debug(f"[{request_id}] Decrypted data: {data}")
+
         # Validation du payload
         serializer = IncomingDataSerializer(data=data)
         if not serializer.is_valid():
