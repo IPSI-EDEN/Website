@@ -75,6 +75,7 @@
         </div>
     </div>
 
+    <!-- Section des graphiques linéaires -->
     <div class="row">
         <div class="col-12 d-none d-md-block">
             <div class="row">
@@ -85,7 +86,6 @@
                             <h5 class="card-title mb-0">{{ chart.title }}</h5>
                         </div>
                         <div class="card-body p-0">
-                            <!-- Plotly chart container -->
                             <div id="{{ chart.id }}" class="plot-container"></div>
                         </div>
                     </div>
@@ -125,76 +125,78 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var includeDate = {{ selected_time_range }} > 24;
+document.addEventListener('DOMContentLoaded', function () {
+    // Si la plage de temps est supérieure à 24h, on affiche la date
+    var includeDate = {{ selected_time_range }} > 24;
 
-        function initializePlots() {
-            {% for gauge in gauges %}
-            Plotly.newPlot('{{ gauge.id }}', {{ gauge.json|safe }}.data, {
-                ...{{ gauge.json|safe }}.layout,
-                template: 'plotly_white' 
-            }, {responsive: true});
+    function initializePlots() {
+        // Initialisation des jauges
+        {% for gauge in gauges %}
+        var gaugeConfig = {{ gauge.json|safe }};
+        Plotly.newPlot('{{ gauge.id }}', gaugeConfig.data, {
+            ...gaugeConfig.layout,
+            template: 'plotly_white'
+        }, {responsive: true});
+        Plotly.newPlot('{{ gauge.id }}-mobile', gaugeConfig.data, {
+            ...gaugeConfig.layout,
+            template: 'plotly_white'
+        }, {responsive: true});
+        {% endfor %}
 
-            Plotly.newPlot('{{ gauge.id }}-mobile', {{ gauge.json|safe }}.data, {
-                ...{{ gauge.json|safe }}.layout,
-                template: 'plotly_white'
-            }, {responsive: true});
-            {% endfor %}
+        // Initialisation des graphiques linéaires
+        {% for chart in charts %}
+        var chartConfig = {{ chart.json|safe }};
+        Plotly.newPlot('{{ chart.id }}', chartConfig.data, {
+            ...chartConfig.layout,
+            template: 'plotly_white',
+            xaxis: {
+                title: 'Temps',
+                type: 'date',
+                dtick: 900000,
+                tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
+            }
+        }, {responsive: true});
+        Plotly.newPlot('{{ chart.id }}-mobile', chartConfig.data, {
+            ...chartConfig.layout,
+            template: 'plotly_white',
+            xaxis: {
+                title: 'Temps',
+                type: 'date',
+                dtick: 900000,
+                tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
+            }
+        }, {responsive: true});
+        {% endfor %}
+    }
 
-            {% for chart in charts %}
-            Plotly.newPlot('{{ chart.id }}', {{ chart.json|safe }}.data, {
-                ...{{ chart.json|safe }}.layout,
-                template: 'plotly_white',
-                xaxis: {
-                    title: 'Temps',
-                    type: 'date',
-                    dtick: 900000,
-                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
-                }
-            }, {responsive: true});
+    function fetchData() {
+        var timeRange = document.getElementById('timeRangeSelect').value;
+        fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Erreur réseau');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.length > 0) {
+                // TODO: mettre à jour les graphiques et jauges avec les nouvelles données
+            }
+        })
+        .catch(error => {
+            console.error("Erreur lors de la récupération des données:", error);
+        });
+    }
 
-            Plotly.newPlot('{{ chart.id }}-mobile', {{ chart.json|safe }}.data, {
-                ...{{ chart.json|safe }}.layout,
-                template: 'plotly_white',
-                xaxis: {
-                    title: 'Temps',
-                    type: 'date',
-                    dtick: 900000,
-                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
-                }
-            }, {responsive: true});
-            {% endfor %}
-        }
-
-        function fetchData() {
-            var timeRange = document.getElementById('timeRangeSelect').value;
-            fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
-                credentials: 'same-origin',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.error || 'Erreur réseau');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.length > 0) {
-                    
-                }
-            })
-            .catch(error => {
-                console.error("Erreur lors de la récupération des données:", error);
-            });
-        }
-
-        initializePlots();
-
-        setInterval(fetchData, 10000);
-    });
+    initializePlots();
+    setInterval(fetchData, 10000);
+});
 </script>
 {% endblock %}

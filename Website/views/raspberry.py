@@ -54,12 +54,6 @@ def manage_greenhouse(request, id):
 
 @login_required(login_url='login')
 def graph_page(request, id):
-    """
-    Affiche les graphiques pour un Raspberry donné.
-    - Sur un seul graphique, on affiche plusieurs courbes (une par SensorLocation)
-      pour l’humidité du sol.
-    - Sur d’autres graphiques, on affiche éventuellement la température, l’humidité de l’air, etc.
-    """
     raspberry = get_object_or_404(Raspberry, id=id)
     sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
 
@@ -68,24 +62,24 @@ def graph_page(request, id):
     end_time = now()
     start_time = end_time - timedelta(hours=selected_time_range)
 
-    # Récupérer toutes les données correspondantes
+    # Récupérer les données dans la période sélectionnée
     sensor_data_qs = SensorData.objects.filter(
         sensor_location__in=sensor_locations,
         timestamp__gte=start_time
     ).order_by('timestamp')
 
-    # On peut limiter le nombre de points pour éviter trop de points
+    # Limiter le nombre de points pour éviter d’en avoir trop
     MAX_POINTS = 200
     total_points = sensor_data_qs.count()
     if total_points > MAX_POINTS:
         step = total_points // MAX_POINTS
         ids = list(sensor_data_qs.values_list('pk', flat=True))
-        ids = ids[::step]  # on prend 1 point sur "step"
+        ids = ids[::step]
         sensor_data_qs = SensorData.objects.filter(pk__in=ids).order_by('timestamp')
 
     sensor_data_list = list(sensor_data_qs)
 
-    # Dictionnaire pour l'humidité du sol => 1 courbe par location
+    # Préparer les données pour l'humidité du sol (une courbe par capteur)
     soil_data_dict = {}
     for loc in sensor_locations:
         soil_data_dict[loc.id] = {
@@ -94,30 +88,26 @@ def graph_page(request, id):
             'values': []
         }
 
-    # Pour tracer température, humidité de l'air, eau => on garde des listes globales
+    # Listes globales pour température, humidité de l’air et niveau d’eau
     time_labels = []
     temperature_list = []
     humidity_list = []
     water_list = []
 
     for data in sensor_data_list:
-        # Convertit en chaîne pour l'axe X
         t_str = data.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-
-        # S'il y a X points dans sensor_data_list, on va stocker X valeurs dans
-        # temperature_list/humidity_list/water_list
+        time_labels.append(t_str)
         temperature_list.append(data.temperature if data.temperature is not None else None)
         humidity_list.append(data.air_humidity if data.air_humidity is not None else None)
         water_list.append(data.water_level if data.water_level is not None else None)
-        time_labels.append(t_str)
 
-        # Remplir la partie Soil
+        # Remplir les données pour le sol
         loc_id = data.sensor_location_id
         soil_val = data.soil_moisture if data.soil_moisture is not None else 0
         soil_data_dict[loc_id]['timestamps'].append(t_str)
         soil_data_dict[loc_id]['values'].append(soil_val)
 
-    # Construction des "traces" pour Plotly (humidité du sol)
+    # Construire les traces pour l’humidité du sol
     soil_moisture_traces = []
     for loc_id, info in soil_data_dict.items():
         if not info['timestamps']:
@@ -130,7 +120,7 @@ def graph_page(request, id):
             'name': info['name']
         })
 
-    # Calcul de la moyenne de la DERNIÈRE valeur de chaque capteur
+    # Calculer la moyenne de la dernière valeur relevée pour chaque capteur de sol
     sum_soil = 0
     count_soil = 0
     for location in sensor_locations:
@@ -139,7 +129,7 @@ def graph_page(request, id):
             count_soil += 1
     current_soil_moisture = sum_soil / count_soil if count_soil > 0 else 0
 
-    # Pour afficher la dernière température/humidité/niveau d’eau
+    # Dernières valeurs pour température, humidité de l’air et niveau d’eau
     if sensor_data_list:
         latest = sensor_data_list[-1]
         current_temperature = latest.temperature or 0
@@ -150,60 +140,112 @@ def graph_page(request, id):
         current_humidity = 0
         current_water_level = 0
 
-    # Exemple: on prépare vos "gauges" et "charts" en JSON (pour Plotly)
-    # Ci-dessous : conceptuel, à adapter à votre template ou usage
+    # Préparer les "gauges" pour Plotly
     gauges = [
         {
             'id': 'temperatureGauge',
             'title': 'Température',
-            'value': current_temperature,
-            'min': -10,
-            'max': 50
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_temperature,
+                    'gauge': {'axis': {'range': [-10, 50]}}
+                }],
+                'layout': {'title': 'Température'}
+            })
         },
         {
             'id': 'humidityGauge',
             'title': 'Humidité',
-            'value': current_humidity,
-            'min': 0,
-            'max': 100
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_humidity,
+                    'gauge': {'axis': {'range': [0, 100]}}
+                }],
+                'layout': {'title': 'Humidité'}
+            })
         },
         {
             'id': 'soilMoistureGauge',
             'title': 'Humidité du sol (moy)',
-            'value': current_soil_moisture,
-            'min': 0,
-            'max': 100
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_soil_moisture,
+                    'gauge': {'axis': {'range': [0, 100]}}
+                }],
+                'layout': {'title': 'Humidité du sol (moy)'}
+            })
         },
         {
             'id': 'waterLevelGauge',
             'title': "Niveau d’eau",
-            'value': current_water_level,
-            'min': 0,
-            'max': 100
-        },
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_water_level,
+                    'gauge': {'axis': {'range': [0, 100]}}
+                }],
+                'layout': {'title': "Niveau d’eau"}
+            })
+        }
     ]
 
-    charts = {
-        'temperature': {
-            'time_labels': time_labels,
-            'values': temperature_list,
-            'title': 'Évolution température (°C)'
+    # Préparer les "charts" (les graphiques linéaires)
+    charts = [
+        {
+            'id': 'temperatureChart',
+            'title': 'Évolution température (°C)',
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': temperature_list,
+                    'mode': 'lines+markers',
+                    'type': 'scatter'
+                }],
+                'layout': {'title': 'Évolution température (°C)'}
+            })
         },
-        'humidity': {
-            'time_labels': time_labels,
-            'values': humidity_list,
-            'title': "Évolution humidité de l'air (%)"
+        {
+            'id': 'humidityChart',
+            'title': "Évolution humidité de l'air (%)",
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': humidity_list,
+                    'mode': 'lines+markers',
+                    'type': 'scatter'
+                }],
+                'layout': {"title": "Évolution humidité de l'air (%)"}
+            })
         },
-        'water': {
-            'time_labels': time_labels,
-            'values': water_list,
-            'title': "Niveau d'eau (%)"
+        {
+            'id': 'waterChart',
+            'title': "Niveau d'eau (%)",
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': water_list,
+                    'mode': 'lines+markers',
+                    'type': 'scatter'
+                }],
+                'layout': {"title": "Niveau d'eau (%)"}
+            })
         },
-        'soil': {
-            'traces': soil_moisture_traces,
-            'title': "Évolution de l'humidité du sol"
+        {
+            'id': 'soilChart',
+            'title': "Évolution de l'humidité du sol",
+            'json': json.dumps({
+                'data': soil_moisture_traces,
+                'layout': {"title": "Évolution de l'humidité du sol"}
+            })
         }
-    }
+    ]
 
     context = {
         'raspberry': raspberry,
