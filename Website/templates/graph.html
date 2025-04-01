@@ -149,6 +149,7 @@
                 ...chartConfig.layout,
                 template: 'plotly_white',
                 xaxis: {
+                    ...chartConfig.layout.xaxis,  // Conserve la config originale
                     title: 'Temps',
                     type: 'date',
                     dtick: 900000,
@@ -156,6 +157,7 @@
                     fixedrange: true  // Désactive le zoom et le déplacement sur l'axe X
                 },
                 yaxis: {
+                    ...chartConfig.layout.yaxis,  // Conserve la config originale
                     fixedrange: true  // Désactive le zoom et le déplacement sur l'axe Y
                 }
             };
@@ -182,7 +184,6 @@
             })
             .then(data => {
                 if (data.length > 0) {
-                    // Traitement des données...
                 }
             })
             .catch(error => {
