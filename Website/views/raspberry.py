@@ -102,6 +102,9 @@ def graph_page(request, id):
         if hasattr(latest_data, 'water_level') and latest_data.water_level is not None:
             current_water_level = latest_data.water_level
 
+    # Définir les plages fixes pour l'axe x uniquement si time_labels est non vide
+    x_range = [time_labels[0], time_labels[-1]] if time_labels else []
+
     gauges = [
         {
             'id': 'temperatureGauge',
@@ -215,14 +218,22 @@ def graph_page(request, id):
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
-                    'xaxis': {'title': 'Temps'},
-                    'yaxis': {'title': '°C'},
+                    'xaxis': {
+                        'title': 'Temps',
+                        'range': x_range,
+                        'autorange': False
+                    },
+                    'yaxis': {
+                        'title': '°C',
+                        'range': [-10, 50],
+                        'autorange': False
+                    }
                 }
             })
         },
         {
             'id': 'humidityChart',
-            'title': 'Évolution de l\'humidité de l’air',
+            'title': "Évolution de l'humidité de l’air",
             'json': json.dumps({
                 'data': [{
                     'x': time_labels,
@@ -237,8 +248,16 @@ def graph_page(request, id):
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
-                    'xaxis': {'title': 'Temps'},
-                    'yaxis': {'title': '%'}
+                    'xaxis': {
+                        'title': 'Temps',
+                        'range': x_range,
+                        'autorange': False
+                    },
+                    'yaxis': {
+                        'title': '%',
+                        'range': [0, 100],
+                        'autorange': False
+                    }
                 }
             })
         },
@@ -259,14 +278,22 @@ def graph_page(request, id):
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
-                    'xaxis': {'title': 'Temps'},
-                    'yaxis': {'title': '%'}
+                    'xaxis': {
+                        'title': 'Temps',
+                        'range': x_range,
+                        'autorange': False
+                    },
+                    'yaxis': {
+                        'title': '%',
+                        'range': [0, 100],
+                        'autorange': False
+                    }
                 }
             })
         },
         {
             'id': 'waterLevelChart',
-            'title': 'Évolution du niveau d’eau',
+            'title': "Évolution du niveau d’eau",
             'json': json.dumps({
                 'data': [{
                     'x': time_labels,
@@ -281,8 +308,16 @@ def graph_page(request, id):
                     'paper_bgcolor': '#f9f9f9',
                     'plot_bgcolor': '#f9f9f9',
                     'font': {'color': '#333'},
-                    'xaxis': {'title': 'Temps'},
-                    'yaxis': {'title': '%'}
+                    'xaxis': {
+                        'title': 'Temps',
+                        'range': x_range,
+                        'autorange': False
+                    },
+                    'yaxis': {
+                        'title': '%',
+                        'range': [0, 100],
+                        'autorange': False
+                    }
                 }
             })
         },
@@ -294,7 +329,6 @@ def graph_page(request, id):
         'charts': charts,
         'selected_time_range': selected_time_range
     })
-
 
 @login_required(login_url='login')
 def raspberry_update(request, id):
