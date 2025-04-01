@@ -104,7 +104,7 @@ def graph_page(request, id):
     water_list = []
 
     for data in sensor_data_list:
-        t_str = data.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        t_str = (data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
         time_labels.append(t_str)
         temperature_list.append(data.temperature if data.temperature is not None else None)
         humidity_list.append(data.air_humidity if data.air_humidity is not None else None)
