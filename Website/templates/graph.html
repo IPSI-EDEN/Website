@@ -125,76 +125,76 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var includeDate = {{ selected_time_range }} > 24;
-
-    function initializePlots() {
-        // Initialisation des jauges
-        {% for gauge in gauges %}
-        var gaugeConfig = {{ gauge.json|safe }};
-        Plotly.newPlot('{{ gauge.id }}', gaugeConfig.data, {
-            ...gaugeConfig.layout,
-            template: 'plotly_white'
-        }, {responsive: true});
-        Plotly.newPlot('{{ gauge.id }}-mobile', gaugeConfig.data, {
-            ...gaugeConfig.layout,
-            template: 'plotly_white'
-        }, {responsive: true});
-        {% endfor %}
-
-        // Initialisation des graphiques linéaires
-        {% for chart in charts %}
-        var chartConfig = {{ chart.json|safe }};
-        Plotly.newPlot('{{ chart.id }}', chartConfig.data, {
-            ...chartConfig.layout,
-            template: 'plotly_white',
-            xaxis: {
-                title: 'Temps',
-                type: 'date',
-                dtick: 900000,
-                tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
-            }
-        }, {responsive: true});
-        Plotly.newPlot('{{ chart.id }}-mobile', chartConfig.data, {
-            ...chartConfig.layout,
-            template: 'plotly_white',
-            xaxis: {
-                title: 'Temps',
-                type: 'date',
-                dtick: 900000,
-                tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
-            }
-        }, {responsive: true});
-        {% endfor %}
-    }
-
-    function fetchData() {
-        var timeRange = document.getElementById('timeRangeSelect').value;
-        fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
-            credentials: 'same-origin',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.error || 'Erreur réseau');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.length > 0) {
-            }
-        })
-        .catch(error => {
-            console.error("Erreur lors de la récupération des données:", error);
-        });
-    }
-
-    initializePlots();
-    setInterval(fetchData, 10000);
-});
+    document.addEventListener('DOMContentLoaded', function () {
+        var includeDate = {{ selected_time_range }} > 24;
+    
+        function initializePlots() {
+            // Initialisation des jauges
+            {% for gauge in gauges %}
+            var gaugeConfig = {{ gauge.json|safe }};
+            Plotly.newPlot('{{ gauge.id }}', gaugeConfig.data, {
+                ...gaugeConfig.layout,
+                template: 'plotly_white'
+            }, {responsive: true, staticPlot: true});
+            Plotly.newPlot('{{ gauge.id }}-mobile', gaugeConfig.data, {
+                ...gaugeConfig.layout,
+                template: 'plotly_white'
+            }, {responsive: true, staticPlot: true});
+            {% endfor %}
+    
+            // Initialisation des graphiques linéaires
+            {% for chart in charts %}
+            var chartConfig = {{ chart.json|safe }};
+            Plotly.newPlot('{{ chart.id }}', chartConfig.data, {
+                ...chartConfig.layout,
+                template: 'plotly_white',
+                xaxis: {
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000,
+                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
+                }
+            }, {responsive: true, staticPlot: true});
+            Plotly.newPlot('{{ chart.id }}-mobile', chartConfig.data, {
+                ...chartConfig.layout,
+                template: 'plotly_white',
+                xaxis: {
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000,
+                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M'
+                }
+            }, {responsive: true, staticPlot: true});
+            {% endfor %}
+        }
+    
+        function fetchData() {
+            var timeRange = document.getElementById('timeRangeSelect').value;
+            fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Erreur réseau');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.length > 0) {
+                }
+            })
+            .catch(error => {
+                console.error("Erreur lors de la récupération des données:", error);
+            });
+        }
+    
+        initializePlots();
+        setInterval(fetchData, 10000);
+    });
 </script>
 {% endblock %}
