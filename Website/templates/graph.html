@@ -146,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Initialisation des graphiques linéaires
         {% for chart in charts %}
         var chartConfig = {{ chart.json|safe }};
-        // Pour tous les graphiques, on applique un axe X en mode date
         Plotly.newPlot('{{ chart.id }}', chartConfig.data, {
             ...chartConfig.layout,
             template: 'plotly_white',

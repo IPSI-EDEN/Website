@@ -79,6 +79,15 @@ def graph_page(request, id):
 
     sensor_data_list = list(sensor_data_qs)
 
+    # Définition des couleurs pour chaque type de graphique
+    TEMPERATURE_COLOR = "#FF5733"  # Rouge/orangé
+    HUMIDITY_COLOR = "#33CFFF"     # Bleu clair
+    WATER_COLOR = "#1f77b4"        # Bleu
+    SOIL_COLOR = "#2ca02c"         # Vert
+
+    # Liste de couleurs pour les différents capteurs d'humidité du sol
+    soil_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+
     # Préparer les données pour l'humidité du sol (une courbe par capteur)
     soil_data_dict = {}
     for loc in sensor_locations:
@@ -107,18 +116,20 @@ def graph_page(request, id):
         soil_data_dict[loc_id]['timestamps'].append(t_str)
         soil_data_dict[loc_id]['values'].append(soil_val)
 
-    # Construire les traces pour l’humidité du sol
+    # Construire les traces pour l’humidité du sol avec une couleur différente pour chaque capteur
     soil_moisture_traces = []
-    for loc_id, info in soil_data_dict.items():
+    for idx, (loc_id, info) in enumerate(soil_data_dict.items()):
         if not info['timestamps']:
             continue
-        soil_moisture_traces.append({
+        trace = {
             'x': info['timestamps'],
             'y': info['values'],
             'mode': 'lines+markers',
             'type': 'scatter',
-            'name': info['name']
-        })
+            'name': info['name'],
+            'line': {'color': soil_colors[idx % len(soil_colors)]}
+        }
+        soil_moisture_traces.append(trace)
 
     # Calculer la moyenne de la dernière valeur relevée pour chaque capteur de sol
     sum_soil = 0
@@ -140,7 +151,7 @@ def graph_page(request, id):
         current_humidity = 0
         current_water_level = 0
 
-    # Préparer les "gauges" pour Plotly
+    # Préparer les "gauges" pour Plotly avec des couleurs personnalisées
     gauges = [
         {
             'id': 'temperatureGauge',
@@ -150,9 +161,15 @@ def graph_page(request, id):
                     'type': 'indicator',
                     'mode': 'gauge+number',
                     'value': current_temperature,
-                    'gauge': {'axis': {'range': [-10, 50]}}
+                    'gauge': {
+                        'axis': {'range': [-10, 50]},
+                        'bar': {'color': TEMPERATURE_COLOR}
+                    }
                 }],
-                'layout': {'title': 'Température', 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                'layout': {
+                    'title': 'Température',
+                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
+                }
             })
         },
         {
@@ -163,9 +180,15 @@ def graph_page(request, id):
                     'type': 'indicator',
                     'mode': 'gauge+number',
                     'value': current_humidity,
-                    'gauge': {'axis': {'range': [0, 100]}}
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': HUMIDITY_COLOR}
+                    }
                 }],
-                'layout': {'title': 'Humidité', 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                'layout': {
+                    'title': 'Humidité',
+                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
+                }
             })
         },
         {
@@ -176,9 +199,15 @@ def graph_page(request, id):
                     'type': 'indicator',
                     'mode': 'gauge+number',
                     'value': current_soil_moisture,
-                    'gauge': {'axis': {'range': [0, 100]}}
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': SOIL_COLOR}
+                    }
                 }],
-                'layout': {'title': 'Humidité du sol (moy)', 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                'layout': {
+                    'title': 'Humidité du sol (moy)',
+                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
+                }
             })
         },
         {
@@ -189,14 +218,20 @@ def graph_page(request, id):
                     'type': 'indicator',
                     'mode': 'gauge+number',
                     'value': current_water_level,
-                    'gauge': {'axis': {'range': [0, 100]}}
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': WATER_COLOR}
+                    }
                 }],
-                'layout': {'title': "Niveau d’eau", 'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                'layout': {
+                    'title': "Niveau d’eau",
+                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
+                }
             })
         }
     ]
 
-    # Préparer les "charts" (graphiques linéaires) avec des axes fixes et marges
+    # Préparer les "charts" (graphiques linéaires) avec des couleurs personnalisées et des axes fixes
     charts = [
         {
             'id': 'temperatureChart',
@@ -206,7 +241,8 @@ def graph_page(request, id):
                     'x': time_labels,
                     'y': temperature_list,
                     'mode': 'lines+markers',
-                    'type': 'scatter'
+                    'type': 'scatter',
+                    'line': {'color': TEMPERATURE_COLOR}
                 }],
                 'layout': {
                     'title': 'Évolution température (°C)',
@@ -223,7 +259,8 @@ def graph_page(request, id):
                     'x': time_labels,
                     'y': humidity_list,
                     'mode': 'lines+markers',
-                    'type': 'scatter'
+                    'type': 'scatter',
+                    'line': {'color': HUMIDITY_COLOR}
                 }],
                 'layout': {
                     'title': "Évolution humidité de l'air (%)",
@@ -240,7 +277,8 @@ def graph_page(request, id):
                     'x': time_labels,
                     'y': water_list,
                     'mode': 'lines+markers',
-                    'type': 'scatter'
+                    'type': 'scatter',
+                    'line': {'color': WATER_COLOR}
                 }],
                 'layout': {
                     'title': "Niveau d'eau (%)",
