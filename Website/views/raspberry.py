@@ -151,7 +151,7 @@ def graph_page(request, id):
         current_humidity = 0
         current_water_level = 0
 
-    # Préparer les "gauges" pour Plotly avec des couleurs personnalisées
+    # Préparer les "gauges" pour Plotly sans titre dans la configuration
     gauges = [
         {
             'id': 'temperatureGauge',
@@ -166,10 +166,7 @@ def graph_page(request, id):
                         'bar': {'color': TEMPERATURE_COLOR}
                     }
                 }],
-                'layout': {
-                    'title': 'Température',
-                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
-                }
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         },
         {
@@ -185,10 +182,7 @@ def graph_page(request, id):
                         'bar': {'color': HUMIDITY_COLOR}
                     }
                 }],
-                'layout': {
-                    'title': 'Humidité',
-                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
-                }
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         },
         {
@@ -204,10 +198,7 @@ def graph_page(request, id):
                         'bar': {'color': SOIL_COLOR}
                     }
                 }],
-                'layout': {
-                    'title': 'Humidité du sol (moy)',
-                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
-                }
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         },
         {
@@ -223,15 +214,12 @@ def graph_page(request, id):
                         'bar': {'color': WATER_COLOR}
                     }
                 }],
-                'layout': {
-                    'title': "Niveau d’eau",
-                    'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}
-                }
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
             })
         }
     ]
 
-    # Préparer les "charts" (graphiques linéaires) avec des couleurs personnalisées et des axes fixes
+    # Préparer les "charts" (graphiques linéaires) sans titre dans la configuration
     charts = [
         {
             'id': 'temperatureChart',
@@ -245,7 +233,6 @@ def graph_page(request, id):
                     'line': {'color': TEMPERATURE_COLOR}
                 }],
                 'layout': {
-                    'title': 'Évolution température (°C)',
                     'yaxis': {'range': [-10, 50]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
@@ -263,7 +250,6 @@ def graph_page(request, id):
                     'line': {'color': HUMIDITY_COLOR}
                 }],
                 'layout': {
-                    'title': "Évolution humidité de l'air (%)",
                     'yaxis': {'range': [0, 100]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
@@ -281,7 +267,6 @@ def graph_page(request, id):
                     'line': {'color': WATER_COLOR}
                 }],
                 'layout': {
-                    'title': "Niveau d'eau (%)",
                     'yaxis': {'range': [0, 100]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
@@ -293,7 +278,6 @@ def graph_page(request, id):
             'json': json.dumps({
                 'data': soil_moisture_traces,
                 'layout': {
-                    'title': "Évolution de l'humidité du sol",
                     'yaxis': {'range': [0, 100]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
