@@ -126,7 +126,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Si la plage de temps est supérieure à 24h, on affiche la date sur l'axe X
     var includeDate = {{ selected_time_range }} > 24;
 
     function initializePlots() {
@@ -187,7 +186,6 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(data => {
             if (data.length > 0) {
-                // TODO : mettre à jour dynamiquement les graphiques et jauges avec les nouvelles données
             }
         })
         .catch(error => {

@@ -6,7 +6,6 @@ def manage_greenhouse(request, id):
     sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
     plants = Plant.objects.all()
 
-    # Préparation des données pour la visualisation D3.js
     sensor_locations_data = []
     for location in sensor_locations:
         sensor_locations_data.append({
@@ -21,10 +20,8 @@ def manage_greenhouse(request, id):
             'y_position': location.y_position,
         })
 
-    # Création d'un formset pour gérer les formulaires de seuils des plantes
     PlantFormSet = modelformset_factory(Plant, form=PlantThresholdForm, extra=0)
 
-    # Traitement spécifique pour le basculement des équipements
     if request.method == 'POST' and 'toggle_device' in request.POST:
         device = request.POST.get('toggle_device')
         if device == 'pump':
@@ -35,7 +32,6 @@ def manage_greenhouse(request, id):
         messages.success(request, f"L'état de {device} a été modifié.")
         return redirect('raspberry_threshold', id=raspberry.id)
 
-    # Traitement du formset pour les seuils
     if request.method == 'POST':
         formset = PlantFormSet(request.POST, queryset=plants)
         if formset.is_valid():
@@ -57,18 +53,15 @@ def graph_page(request, id):
     raspberry = get_object_or_404(Raspberry, id=id)
     sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
 
-    # Plage de temps (par défaut 24h)
     selected_time_range = int(request.GET.get('time_range', 24))
     end_time = now()
     start_time = end_time - timedelta(hours=selected_time_range)
 
-    # Récupérer les données dans la période sélectionnée
     sensor_data_qs = SensorData.objects.filter(
         sensor_location__in=sensor_locations,
         timestamp__gte=start_time
     ).order_by('timestamp')
 
-    # Limiter le nombre de points pour éviter d’en avoir trop
     MAX_POINTS = 200
     total_points = sensor_data_qs.count()
     if total_points > MAX_POINTS:
@@ -79,16 +72,13 @@ def graph_page(request, id):
 
     sensor_data_list = list(sensor_data_qs)
 
-    # Définition des couleurs pour chaque type de graphique
     TEMPERATURE_COLOR = "#FF5733"  # Rouge/orangé
     HUMIDITY_COLOR = "#33CFFF"     # Bleu clair
     WATER_COLOR = "#1f77b4"        # Bleu
     SOIL_COLOR = "#2ca02c"         # Vert
 
-    # Liste de couleurs pour les différents capteurs d'humidité du sol
     soil_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
 
-    # Préparer les données pour l'humidité du sol (une courbe par capteur)
     soil_data_dict = {}
     for loc in sensor_locations:
         soil_data_dict[loc.id] = {
@@ -97,21 +87,18 @@ def graph_page(request, id):
             'values': []
         }
 
-    # Listes globales pour température, humidité de l’air et niveau d’eau
     time_labels = []
     temperature_list = []
     humidity_list = []
     water_list = []
 
     for data in sensor_data_list:
-        # Appliquer le décalage de 2 heures
         t_str = (data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
         time_labels.append(t_str)
         temperature_list.append(data.temperature if data.temperature is not None else None)
         humidity_list.append(data.air_humidity if data.air_humidity is not None else None)
         water_list.append(data.water_level if data.water_level is not None else None)
 
-        # Préparer les données du sol en normalisant la valeur
         loc_id = data.sensor_location_id
         soil_val = data.soil_moisture if data.soil_moisture is not None else 0
         if isinstance(soil_val, list):
@@ -119,7 +106,6 @@ def graph_page(request, id):
         soil_data_dict[loc_id]['timestamps'].append(t_str)
         soil_data_dict[loc_id]['values'].append(soil_val)
 
-    # Construire les traces pour l’humidité du sol avec une couleur différente pour chaque capteur
     soil_moisture_traces = []
     for idx, (loc_id, info) in enumerate(soil_data_dict.items()):
         if not info['timestamps']:
@@ -135,7 +121,6 @@ def graph_page(request, id):
         soil_moisture_traces.append(trace)
 
     logger.debug(f"Soil moisture traces: {soil_moisture_traces}")
-    # Calculer la moyenne de la dernière valeur relevée pour chaque capteur de sol
     sum_soil = 0
     count_soil = 0
     for location in sensor_locations:
@@ -144,7 +129,6 @@ def graph_page(request, id):
             count_soil += 1
     current_soil_moisture = sum_soil / count_soil if count_soil > 0 else 0
 
-    # Dernières valeurs pour température, humidité de l’air et niveau d’eau
     if sensor_data_list:
         latest = sensor_data_list[-1]
         current_temperature = latest.temperature or 0
@@ -155,11 +139,10 @@ def graph_page(request, id):
         current_humidity = 0
         current_water_level = 0
 
-    # Préparer les "gauges" pour Plotly sans titre dans la configuration
     gauges = [
         {
             'id': 'temperatureGauge',
-            'title': 'Température',
+            'title': 'Température (°C)',
             'json': json.dumps({
                 'data': [{
                     'type': 'indicator',
@@ -175,7 +158,7 @@ def graph_page(request, id):
         },
         {
             'id': 'humidityGauge',
-            'title': 'Humidité',
+            'title': 'Humidité de l’air (%)',
             'json': json.dumps({
                 'data': [{
                     'type': 'indicator',
@@ -191,7 +174,7 @@ def graph_page(request, id):
         },
         {
             'id': 'soilMoistureGauge',
-            'title': 'Humidité du sol',
+            'title': 'Humidité du sol (%)',
             'json': json.dumps({
                 'data': [{
                     'type': 'indicator',
@@ -207,7 +190,7 @@ def graph_page(request, id):
         },
         {
             'id': 'waterLevelGauge',
-            'title': "Niveau d’eau",
+            'title': "Niveau d’eau (%)",
             'json': json.dumps({
                 'data': [{
                     'type': 'indicator',
@@ -223,7 +206,6 @@ def graph_page(request, id):
         }
     ]
 
-    # Préparer les "charts" (graphiques linéaires) sans titre dans la configuration
     charts = [
         {
             'id': 'temperatureChart',
@@ -336,6 +318,5 @@ def toggle_device(request, id, device):
         raspberry.save()
     else:
         messages.error(request, "Méthode non autorisée.")
-    # Rediriger vers la page de gestion de la serre
     return redirect('manage_greenhouse', id=raspberry.id)
 

@@ -83,7 +83,6 @@ def home_page(request):
     user = request.user
 
     try:
-        # Admin or staff user
         if user.is_superuser or user.is_staff:
             logger.debug(f"[{request_id}] {user} is admin/staff. Fetching all active raspberries.")
             raspberries = Raspberry.objects.filter(active=True).annotate(

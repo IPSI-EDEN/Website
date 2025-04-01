@@ -15,7 +15,6 @@ def receive_sensor_data(request):
             logger.error(f"[{request_id}] Missing encrypted data.")
             return Response({"error": "Données chiffrées manquantes."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Déchiffrage
         encrypted_data = base64.b64decode(encrypted_data_b64)
         nonce = encrypted_data[:12]
         ciphertext = encrypted_data[12:]
@@ -25,7 +24,6 @@ def receive_sensor_data(request):
 
         logger.debug(f"[{request_id}] Decrypted data: {data}")
 
-        # Validation du payload
         serializer = IncomingDataSerializer(data=data)
         if not serializer.is_valid():
             logger.error(f"[{request_id}] Invalid data received: {serializer.errors}")
@@ -37,35 +35,29 @@ def receive_sensor_data(request):
         locations = validated_data['locations'] 
         temperature = validated_data['temperature']
         air_humidity = validated_data['air_humidity']
-        water_level = validated_data.get('water_level')  # si vous l'avez dans le serializer
+        water_level = validated_data.get('water_level')
 
         with transaction.atomic():
-            # Récupérer ou créer le groupe par défaut
             group, _ = Group.objects.get_or_create(
                 name=DEFAULT_GROUP_NAME,
                 defaults={'description': "Default group for unassigned Raspberries."}
             )
-            # Récupérer ou créer le Raspberry
             raspberry, _ = Raspberry.objects.get_or_create(
                 device_id=device_name,
                 defaults={'group': group, 'active': True, 'status': 'unassigned'}
             )
 
-            # Créer/mettre à jour chaque emplacement et stocker l'historique
             for loc in locations:
                 location_name = loc['location_name']
                 soil_val = loc.get('soil_moisture', None)
 
-                # Récupérer ou créer la SensorLocation
                 sensor_location, _ = SensorLocation.objects.get_or_create(
                     raspberry=raspberry,
                     location_name=location_name
                 )
-                # Mettre à jour la valeur courante
                 sensor_location.soil_moisture = soil_val
                 sensor_location.save()
 
-                # Stocker l'historique dans SensorData
                 SensorData.objects.create(
                     sensor_location=sensor_location,
                     timestamp=timestamp,
@@ -75,7 +67,6 @@ def receive_sensor_data(request):
                     water_level=water_level
                 )
         
-        # Réponse (chiffrée) de succès
         success_message = {
             "message": "Données enregistrées avec succès.",
             "raspberry": {
