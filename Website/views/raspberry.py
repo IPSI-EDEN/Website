@@ -85,7 +85,7 @@ def graph_page(request, id):
             sensor_ids = sensor_ids[::step]
             sensor_data = SensorData.objects.filter(pk__in=sensor_ids).order_by('timestamp')
 
-        time_labels = [data.timestamp.strftime('%Y-%m-%d %H:%M:%S') for data in sensor_data]
+        time_labels = [(data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S') for data in sensor_data]
         temperature_data = [data.temperature for data in sensor_data]
         humidity_data = [data.air_humidity for data in sensor_data]
         soil_moisture_data = [data.soil_moisture for data in sensor_data]
