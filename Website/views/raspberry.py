@@ -11,7 +11,7 @@ def manage_greenhouse(request, id):
         sensor_locations_data.append({
             'location_name': 'test',
             'plant': {
-                'name': location.plant.name,
+                'name': 'test',
                 'soil_moisture_min': location.plant.soil_moisture_min,
                 'soil_moisture_max': location.plant.soil_moisture_max,
             },
