@@ -219,6 +219,10 @@ def graph_page(request, id):
                     'line': {'color': TEMPERATURE_COLOR}
                 }],
                 'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
                     'yaxis': {'range': [-10, 50]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
@@ -236,6 +240,10 @@ def graph_page(request, id):
                     'line': {'color': HUMIDITY_COLOR}
                 }],
                 'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
                     'yaxis': {'range': [0, 100]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
@@ -253,6 +261,10 @@ def graph_page(request, id):
                     'line': {'color': WATER_COLOR}
                 }],
                 'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
                     'yaxis': {'range': [0, 100]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
@@ -264,6 +276,10 @@ def graph_page(request, id):
             'json': json.dumps({
                 'data': soil_moisture_traces,
                 'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
                     'yaxis': {'range': [0, 100]},
                     'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
                 }
