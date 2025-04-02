@@ -9,15 +9,15 @@ def manage_greenhouse(request, id):
     sensor_locations_data = []
     for location in sensor_locations:
         sensor_locations_data.append({
-            'location_name': 'test',
+            'location_name': '',
             'plant': {
-                'name': 'test',
-                'soil_moisture_min': location.plant.soil_moisture_min,
-                'soil_moisture_max': location.plant.soil_moisture_max,
+                'name': '',
+                'soil_moisture_min': '',
+                'soil_moisture_max': '',
             },
-            'soil_moisture': location.soil_moisture,
-            'x_position': location.x_position,
-            'y_position': location.y_position,
+            'soil_moisture': '',
+            'x_position': '',
+            'y_position': '',
         })
 
     PlantFormSet = modelformset_factory(Plant, form=PlantThresholdForm, extra=0)
