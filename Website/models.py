@@ -61,7 +61,8 @@ class SensorLocation(models.Model):
         unique_together = ('raspberry', 'location_name')
 
     def __str__(self):
-        return f"{self.location_name} ({self.plant.name})"
+        plant_name = self.plant.name if self.plant else "Pas de plante assignée"
+        return f"{self.location_name} ({plant_name})"
 
 class SensorData(models.Model):
     sensor_location = models.ForeignKey(SensorLocation, on_delete=models.CASCADE, related_name='sensor_data')
