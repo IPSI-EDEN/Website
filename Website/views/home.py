@@ -43,8 +43,8 @@ def login_view(request):
     logger.debug(f"[{request_id}] Starting login_view. Method={request.method}, User Authenticated={request.user.is_authenticated}")
 
     if request.user.is_authenticated:
-        logger.info(f"[{request_id}] User {request.user} already authenticated, redirecting to home.")
-        return redirect('home')
+        logger.info(f"[{request_id}] User {request.user} already authenticated, redirecting to statuses.")
+        return redirect('statuses')
     
     if request.method == 'POST':
         logger.debug(f"[{request_id}] Processing POST data for login: {request.POST}")
@@ -53,7 +53,7 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             logger.info(f"[{request_id}] User {user} logged in successfully.")
-            return redirect('home')
+            return redirect('statuses')
         else:
             logger.warning(f"[{request_id}] Login failed for POST data. Errors={form.errors}")
             messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
@@ -76,10 +76,13 @@ DEFAULT_GROUP_NAME = "Non Assigné"
 def is_admin(user):
     return user.is_superuser or user.is_staff
 
-@login_required(login_url='login')
 def home_page(request):
+    return render(request, 'home.html')
+
+@login_required(login_url='login')
+def statuses_page(request):
     request_id = str(uuid.uuid4())
-    logger.debug(f"[{request_id}] Starting home_page. User={request.user}, Method={request.method}")
+    logger.debug(f"[{request_id}] Starting statuses_page. User={request.user}, Method={request.method}")
     user = request.user
 
     try:
@@ -93,7 +96,7 @@ def home_page(request):
             user_groups = Group.objects.filter(user_groups__user=user)
             if not user_groups.exists():
                 logger.warning(f"[{request_id}] {user} has no associated groups.")
-                return render(request, 'home.html', {
+                return render(request, 'statuses.html', {
                     'raspberries': [],
                     'error': "Vous n'êtes associé à aucun groupe.",
                 })
@@ -117,13 +120,13 @@ def home_page(request):
                 'last_data': (raspberry.last_data + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S') if raspberry.last_data else "Aucune donnée",
             })
 
-        logger.info(f"[{request_id}] Rendered home_page for User={user} with {len(raspberry_status)} raspberries.")
-        return render(request, 'home.html', {
+        logger.info(f"[{request_id}] Rendered statuses_page for User={user} with {len(raspberry_status)} raspberries.")
+        return render(request, 'statuses.html', {
             'raspberry_status': raspberry_status,
         })
     except Exception as e:
-        logger.exception(f"[{request_id}] Error rendering home_page for User={user}: {e}")
-        return render(request, 'home.html', {
+        logger.exception(f"[{request_id}] Error rendering statuses_page for User={user}: {e}")
+        return render(request, 'statuses.html', {
             'raspberries': [],
             'error': "Une erreur s'est produite lors de la récupération des données.",
         })

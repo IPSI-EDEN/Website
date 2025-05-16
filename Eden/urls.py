@@ -8,6 +8,7 @@ from Website.views import home, raspberry, api
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', home.login_view, name='login'),
+    path('statuses/', home.statuses_page, name='statuses'),
     path('logout/', home.logout_view, name='logout'),
     path('', home.home_page, name='home'),
 

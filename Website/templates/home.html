@@ -1,58 +1,112 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <div class="container mt-5">
+    <div class="text-center">
+        <svg id="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 154.08 135.56" class="me-2" style="height: 150px; width: auto;">
+            <defs>
+                <style>
+                .cls-1, .cls-2 {
+                fill: none;
+                }
+            
+                .cls-1, .cls-2, .cls-3, .cls-4 {
+                stroke: #fff;
+                stroke-miterlimit: 10;
+                }
+            
+                .cls-2, .cls-3 {
+                stroke-linecap: round;
+                }
+            
+                .cls-3, .cls-4 {
+                fill: #fff;
+                }
+                </style>
+            </defs>
+            <g id="Calque_1-2" data-name="Calque 1">
+                <g>
+                <g>
+                    <path class="cls-1" d="m35.44,83.44c-.18-21.26,16.61-38.64,37.5-38.82,20.89-.18,37.96,16.91,38.14,38.17"/>
+                    <line class="cls-1" x1="77.65" y1="28" x2="76.14" y2="44.22"/>
+                    <line class="cls-1" x1="100.46" y1="36.14" x2="92.14" y2="50.05"/>
+                    <line class="cls-1" x1="117.06" y1="51.69" x2="104.44" y2="61.7"/>
+                    <line class="cls-1" x1="54.42" y1="31.92" x2="58.45" y2="47.68"/>
+                    <line class="cls-1" x1="126.24" y1="74.05" x2="110.34" y2="75.9"/>
+                    <line class="cls-1" x1="151.23" y1="55.66" x2="108.22" y2="68.24"/>
+                    <line class="cls-1" x1="32.67" y1="46.79" x2="43.99" y2="58.3"/>
+                    <line class="cls-1" x1="20.72" y1="71.88" x2="36.63" y2="73.52"/>
+                    <line class="cls-1" x1="131.3" y1="23.62" x2="99.65" y2="55.83"/>
+                    <line class="cls-1" x1="100.66" y1="4.36" x2="85.1" y2="47.08"/>
+                    <line class="cls-1" x1="63.27" y1=".05" x2="67.48" y2="45.4"/>
+                    <line class="cls-1" x1="28.65" y1="13" x2="51.02" y2="52.45"/>
+                    <line class="cls-1" x1=".23" y1="44.42" x2="40.15" y2="65.02"/>
+                </g>
+                <g>
+                    <path class="cls-2" d="m72.34,54.55c-1.76,2.4-11.28,15.74-7.4,23.82.22.46.49.91.81,1.34h0c.26.37.5.64.75.94.08.09.16.18.24.27.36.36.85.79,1.45,1.21.42.29,1.04.72,1.87,1.02,1.32.49,2.45.39,2.94.34,1.73-.17,3.31-.77,4.27-1.52.72-.56,1.25-1.1,1.47-1.36.57-.66.9-1.24,1.22-1.81.34-.59.73-1.29,1.05-2.28,0,0,0,0,0,0,0,0,.23-.85.4-1.67.07-.36.64-5.08-2.7-11.76-1.02-2.05-2.83-5.09-5.85-8.1"/>
+                    <path class="cls-1" d="m66.6,72.59c0,3.69,2.45,6.67,5.47,6.67"/>
+                    <line class="cls-2" x1="72.87" y1="55.01" x2="72.34" y2="54.55"/>
+                </g>
+                <line class="cls-2" x1="73.15" y1="104.05" x2="73.15" y2="135.05"/>
+                <path class="cls-2" d="m73.15,109.05c0-14.37,11.42-26,25.54-26"/>
+                <path class="cls-2" d="m98.69,83.05c0,14.37-7.91,26-17.68,26"/>
+                <path class="cls-2" d="m81.01,109.05c0-7.18,3.51-13,7.86-13"/>
+                <ellipse class="cls-3" cx="88.38" cy="95.55" rx="1.47" ry="1.5"/>
+                <path class="cls-2" d="m73.15,110.05c0-14.37-11.42-26-25.54-26"/>
+                <path class="cls-2" d="m47.61,84.05c0,14.37,7.91,26,17.68,26"/>
+                <path class="cls-2" d="m65.29,110.05c0-7.18-3.51-13-7.86-13"/>
+                <ellipse class="cls-3" cx="57.92" cy="96.55" rx="1.47" ry="1.5"/>
+                <path class="cls-1" d="m73.23,130.66c-6.52-2.76-10.44-8.3-8.77-12.38"/>
+                <ellipse class="cls-4" cx="63.82" cy="118.55" rx="1.47" ry="1.5"/>
+                <path class="cls-1" d="m73.07,130.66c6.52-2.76,10.44-8.3,8.77-12.38"/>
+                <ellipse class="cls-4" cx="82.48" cy="118.55" rx="1.47" ry="1.5"/>
+                </g>
+            </g>
+            </svg>
+        <hr>
+        <h1 class="display-4 text-white font-weight-bold">EDEN</h1>
+        <p class="lead text-white font-weight-bold">La nature connectée à votre quotidien</p>
+    </div>
 
-    {% if raspberry_status %}
-        <div class="text-center mb-4">
-            <h1 class="display-4">Dashboard</h1>
-            <p class="lead text-muted">Suivez en temps réel l'état et les informations de vos serres</p>
-            <hr class="w-25 mx-auto">
-        </div>
+    <style>
+        body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        }
 
-        {% if error %}
-            <div class="alert alert-danger">
-                {{ error }}
-            </div>
-        {% endif %}
+        .video-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        object-fit: cover;
+        filter: brightness(50%);
+        }
 
-        <div class="row">
-            {% for raspberry in raspberry_status %}
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card shadow-sm hover-effect">
-                    <div class="card-header text-white {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
-                        <h5 class="mb-0">{{ raspberry.device_id }}</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted"><strong>Groupe :</strong> {{ raspberry.group }}</p>
-                        <p class="text-muted"><strong>Emplacement :</strong> {{ raspberry.location }}</p>
-                        <p class="text-muted"><strong>Dernière donnée :</strong> {{ raspberry.last_data }}</p>
-                    </div>
-                    <div class="card-footer d-flex justify-content-between align-items-center">
-                        <span class="badge {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
-                            {{ raspberry.status }}
-                        </span>
-                        <a href="{% url 'raspberry_charts' raspberry.id %}" class="btn btn-outline-primary btn-sm">
-                            Détails
-                        </a>
-                        {% if user.is_staff %}
-                            <a href="{% url 'raspberry_update' raspberry.id %}" class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'raspberry_delete' raspberry.id %}" class="btn btn-outline-danger btn-sm">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="text-center">
-            <h1 class="display-4">Dashboard</h1>
-            <p class="lead text-muted">Aucune serre n'est enregistrée</p>
-        </div>
-    {% endif %}
+        .container {
+        position: relative;
+        z-index: 1;
+        }
 
+        .text-white {
+        color: white;
+        }
+
+        .font-weight-bold {
+        font-weight: bold;
+        }
+    </style>
+
+    <video class="video-background" autoplay muted loop>
+        <source src="{% static 'app/videos/background_pres.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    
+    <div class="text-center" style="margin-top: 40vh;">
+        <a href="{% url 'statuses' %}" class="btn btn-primary btn-lg mt-4">Accéder à votre serre</a>
+    </div>
 </div>
 {% endblock %}
