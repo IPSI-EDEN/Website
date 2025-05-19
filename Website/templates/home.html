@@ -1,51 +1,15 @@
+{% extends 'base.html' %}
 {% load static %}
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Eden</title>
-    
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/png" href="{% static 'app/images/Logo_blanc.png' %}"/>
-    
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
-    <!-- Bootstrap Table CSS -->
-    <link href="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.css" rel="stylesheet">
-
-    <!-- Plotly -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-
-    <!-- Scripts -->
-    <script type="module" src="{% static 'scripts/main.js' %}"></script>
-    
-    <!-- Styles personnalisés -->
-    <link rel="stylesheet" href="{% static 'app/styles.css' %}">
-
-    <!-- Custom google fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:ital,wght@0,100..900;1,100..900&family=Funnel+Display:wght@300..800&display=swap" rel="stylesheet">
-</head>
-
 {% block content %}
-
-<video class="video-background" autoplay muted loop playsinline webkit-playsinline="true" preload="auto">
-    <source src="{% static 'app/videos/background_pres.mp4' %}" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
 
 <div class="d-flex flex-column justify-content-between align-items-center text-center px-3" style="height: 85vh;">
     <!-- Top part -->
     <div class="pt-4" style="margin-top: 5vh;">
-        <h1 class="font title display-4 text-white fw-bold">EDEN</h1>
-        <p class="font lead text-white">La nature connectée à votre quotidien</p>
+        <h1 class="display-4 text-white fw-bold">EDEN</h1>
+        <p class="lead text-white">La nature connectée à votre quotidien</p>
     </div>
     <!-- Middle part -->
-    <div>
+    <div class="d-flex justify-content-center align-items-center">
         <svg id="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 154.08 135.56" class="mb-2" style="height: 15vh; width: auto;">
             <defs>
                 <style>
@@ -109,56 +73,8 @@
     </div>
     <!-- Bottom part -->
     <div class="pb-4">
-        <a href="{% url 'statuses' %}" class="font btn btn-lg custom-btn">Accédez à votre serre</a>
+        <a href="{% url 'statuses' %}" class="btn btn-lg custom-btn">Accédez à votre serre</a>
     </div>
 </div>
-
-<style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    .video-background {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      filter: brightness(50%);
-      z-index: -1;
-    }
-
-    .font {
-        font-family: "Funnel Display", sans-serif;
-    }
-
-    .title {
-        font-weight: 900;
-    }
-
-    .custom-btn {
-        color: #fff;
-        border-color: #fff;
-        border-radius: 14px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    }
-
-    .custom-btn:hover {
-        background-color: rgba(255, 255, 255, 0.5);
-        transition: all 0.3s ease;
-    }
-
-    .custom-btn:active {
-        background-color: #fff !important;
-        color: #000 !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        transform: translateY(2px);
-    }
-
-    #logo {
-        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-        stroke-width: 2 !important;
-    }
-</style>
 
 {% endblock %}
