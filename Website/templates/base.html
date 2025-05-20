@@ -52,13 +52,13 @@
         <div class="d-flex align-items-center">
           {% if raspberry %}
             <a class="navbar-brand no-padding me-3" href="{% url 'statuses' %}">
-            <i class="bi bi-arrow-left-circle-fill text-white" style="font-size: 2rem;"></i>
+            <i class="no-padding bi bi-arrow-left-circle-fill text-white" style="font-size: 1.5rem"></i>
             </a>
           {% endif %}
             <a class="nav-link bi no-padding bi-door-open-fill text-white" href="{% url 'logout' %}"> Déconnexion</a>
         </div>
       {% if raspberry %}
-        <nav class="navbar navbar-expand-lg rounded-top" id="navbar">
+        <nav class="navbar no-padding navbar-expand-lg rounded-top" id="navbar">
           <div class="container-fluid">
               <div class="collapse navbar-collapse" id="main_navbar">
                   <ul class="navbar-nav me-auto mb-lg-0">
@@ -87,7 +87,7 @@
       {% endblock %}
   </div>
 
-  <footer class="bg-dark text-white text-center py-3 mt-auto">
+  <footer class="text-white text-center py-3 mt-auto footer-eden">
       &copy; 2025 Eden. Tous droits réservés.
   </footer>
 </body>
