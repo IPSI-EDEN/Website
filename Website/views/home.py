@@ -64,6 +64,25 @@ def login_view(request):
     return render(request, 'registration/login.html', {'form': form})
 
 
+def guest_login(request):
+    request_id = str(uuid.uuid4())
+    logger.debug(f"[{request_id}] Starting guest_login. Method={request.method}, User Authenticated={request.user.is_authenticated}")
+
+    if request.user.is_authenticated:
+        logger.info(f"[{request_id}] User {request.user} already authenticated, redirecting to statuses.")
+        return redirect('statuses')
+    
+    try:
+        guest_user = User.objects.get(username="invite")
+        login(request, guest_user)
+        logger.info(f"[{request_id}] Guest user {guest_user} logged in successfully.")
+        return redirect('statuses')
+    except User.DoesNotExist:
+        logger.error(f"[{request_id}] Guest user 'invite' does not exist.")
+        messages.error(request, "L'utilisateur invité n'existe pas.")
+        return redirect('login')
+
+
 def logout_view(request):
     request_id = str(uuid.uuid4())
     logger.info(f"[{request_id}] User {request.user} logging out.")

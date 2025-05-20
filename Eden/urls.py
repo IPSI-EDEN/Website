@@ -8,6 +8,7 @@ from Website.views import home, raspberry, api
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', home.login_view, name='login'),
+    path('guest-login/', home.guest_login, name='guest_login'),
     path('statuses/', home.statuses_page, name='statuses'),
     path('logout/', home.logout_view, name='logout'),
     path('', home.home_page, name='home'),
@@ -20,6 +21,7 @@ urlpatterns = [
 
     path('api/sensor-data/', api.receive_sensor_data, name='receive_sensor_data'),
     path('api/sensor-data/<int:raspberry_id>/', api.get_latest_sensor_data, name='get_latest_sensor_data'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'Website.views.home.handler404'
