@@ -68,7 +68,6 @@ def logout_view(request):
     request_id = str(uuid.uuid4())
     logger.info(f"[{request_id}] User {request.user} logging out.")
     logout(request)
-    messages.success(request, "Vous avez été déconnecté avec succès.")
     return redirect('login')
 
 DEFAULT_GROUP_NAME = "Non Assigné"
