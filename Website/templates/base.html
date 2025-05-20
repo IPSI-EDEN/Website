@@ -48,25 +48,31 @@
   {% if user.is_authenticated %}
   <header class="py-4 navbar-eden">
     <div class="container-fluid d-flex justify-content-between align-items-center">
+        <!-- Link to the statuses page -->
+        <div class="d-flex align-items-center">
+          {% if raspberry %}
+            <a class="navbar-brand no-padding me-3" href="{% url 'statuses' %}">
+            <i class="bi bi-arrow-left-circle-fill text-white" style="font-size: 2rem;"></i>
+            </a>
+          {% endif %}
+            <a class="nav-link bi no-padding bi-door-open-fill text-white" href="{% url 'logout' %}"> Déconnexion</a>
+        </div>
       {% if raspberry %}
         <nav class="navbar navbar-expand-lg rounded-top" id="navbar">
           <div class="container-fluid">
               <div class="collapse navbar-collapse" id="main_navbar">
-                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <ul class="navbar-nav me-auto mb-lg-0">
                     <li class="nav-item ms-3">
-                      <a id="nav_charts" class="nav-link bi bi-clipboard-data-fill text-white" href="{% url 'raspberry_charts' raspberry.id %}"> Graphiques</a>
+                      <a id="nav_charts" class="nav-link no-padding bi bi-clipboard-data-fill text-white" href="{% url 'raspberry_charts' raspberry.id %}"> Graphiques</a>
                     </li>
                       <li class="nav-item ms-3">
-                          <a id="nav_threhold" class="nav-link bi bi-search text-white" href="{% url 'raspberry_threshold' raspberry.id %}"> Seuil</a>
+                          <a id="nav_threhold" class="nav-link no-padding bi bi-search text-white" href="{% url 'raspberry_threshold' raspberry.id %}"> Seuils</a>
                       </li>
                   </ul>
               </div>
           </div>
         </nav>
       {% endif %}
-        <span class="navbar-text">
-          <a class="nav-link bi bi-door-open-fill text-white" href="{% url 'logout' %}"> Déconnexion</a>
-        </span>
     </div>
   </header>
   {% endif %}

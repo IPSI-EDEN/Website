@@ -79,49 +79,47 @@
         <h1 class="font title display-4 text-white fw-bold">EDEN</h1>
     </div>
     <!-- Middle part -->
-    <div>
-        <div class="card p-4">
-            <h3 class="text-white font">Connexion</h3>
+    <div class="card p-4">
+        <h3 class="text-white font">Connexion</h3>
 
-            {% if last_error %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ last_error }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-            </div>
-            {% endif %}
-
-            <form action="" method="post" novalidate>
-                {% csrf_token %}
-
-                <!-- Champ Utilisateur -->
-                <label for="{{ form.username.id_for_label }}" class="text-white font">Nom d'utilisateur</label>
-                <input type="text" name="{{ form.username.name }}"
-                    class="login-field form-control mt-1 {% if form.username.errors %}is-invalid{% endif %}"
-                    id="{{ form.username.id_for_label }}" value="{{ form.username.value|default_if_none:'' }}" required>
-                {% if form.username.errors %}
-                <div class="invalid-feedback">
-                    {{ form.username.errors|striptags }}
-                </div>
-                {% endif %}
-
-                <!-- Champ Mot de Passe -->
-                <label for="{{ form.password.id_for_label }}" class="text-white font pt-2">Mot de passe</label>
-                <input type="password" name="{{ form.password.name }}"
-                    class="login-field form-control mt-1 {% if form.password.errors %}is-invalid{% endif %}"
-                    id="{{ form.password.id_for_label }}" required>
-                {% if form.password.errors %}
-                <div class="invalid-feedback">
-                    {{ form.password.errors|striptags }}
-                </div>
-                {% endif %}
-
-                <div class="d-grid mt-4">
-                    <button type="submit" class="font btn btn-lg custom-btn accented-btn">
-                        <i class="bi bi-door-open-fill me-2"></i> Se Connecter
-                    </button>
-                </div>
-            </form>
+        {% if last_error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ last_error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
         </div>
+        {% endif %}
+
+        <form action="" method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Champ Utilisateur -->
+        <label for="{{ form.username.id_for_label }}" class="text-white font">Nom d'utilisateur</label>
+        <input type="text" name="{{ form.username.name }}"
+            class="login-field form-control mt-1 {% if form.username.errors %}is-invalid{% endif %}"
+            id="{{ form.username.id_for_label }}" value="{{ form.username.value|default_if_none:'' }}" required>
+        {% if form.username.errors %}
+        <div class="invalid-feedback">
+            {{ form.username.errors|striptags }}
+        </div>
+        {% endif %}
+
+        <!-- Champ Mot de Passe -->
+        <label for="{{ form.password.id_for_label }}" class="text-white font pt-2">Mot de passe</label>
+        <input type="password" name="{{ form.password.name }}"
+            class="login-field form-control mt-1 {% if form.password.errors %}is-invalid{% endif %}"
+            id="{{ form.password.id_for_label }}" required>
+        {% if form.password.errors %}
+        <div class="invalid-feedback">
+            {{ form.password.errors|striptags }}
+        </div>
+        {% endif %}
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="font btn btn-lg custom-btn accented-btn">
+            <i class="bi bi-door-open-fill me-2"></i> Se connecter
+            </button>
+        </div>
+        </form>
     </div>
     <!-- Bottom part -->
     <div class="pb-4">
