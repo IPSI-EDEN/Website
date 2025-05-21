@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    {% if raspberry_status %}
+        <div class="text-center mb-4">
+            <h1 class="display-4">Dashboard</h1>
+            <p class="lead">Suivez en temps réel l'état et les informations de vos serres</p>
+            <hr class="w-25 mx-auto">
+        </div>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="row">
+            {% for raspberry in raspberry_status %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header accented-btn">
+                        <h5 class="mb-0">{{ raspberry.device_id }}</h5>
+                    </div>
+                    <div class="card-content">
+                        <p><strong>Groupe :</strong> {{ raspberry.group }}</p>
+                        <p><strong>Emplacement :</strong> {{ raspberry.location }}</p>
+                        <p><strong>Dernière donnée :</strong> {{ raspberry.last_data }}</p>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2">
+                        <span class="badge {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ raspberry.status }}
+                        </span>
+                        <a href="{% url 'raspberry_charts' raspberry.id %}" class="btn custom-btn btn-sm accented-btn">
+                            Détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center">
+            <h1 class="display-4">Dashboard</h1>
+            <p class="lead">Aucune serre n'est enregistrée</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

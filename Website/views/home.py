@@ -63,34 +63,6 @@ def login_view(request):
     
     return render(request, 'registration/login.html', {'form': form})
 
-
-def guest_login(request):
-    request_id = str(uuid.uuid4())
-    logger.debug(f"[{request_id}] Starting guest_login. Method={request.method}, User Authenticated={request.user.is_authenticated}")
-
-    if request.user.is_authenticated:
-        logger.info(f"[{request_id}] User {request.user} already authenticated, redirecting to statuses.")
-        return redirect('statuses')
-
-    guest_username = "invite"
-    guest_password = "invitetse"
-
-    try:
-        guest_user = User.objects.get(username=guest_username)
-        if guest_user.check_password(guest_password):
-            login(request, guest_user)
-            logger.info(f"[{request_id}] Guest user {guest_user} logged in successfully.")
-            return redirect('statuses')
-        else:
-            logger.error(f"[{request_id}] Incorrect password for guest user 'invite'.")
-            messages.error(request, "Mot de passe incorrect pour l'utilisateur invité.")
-            return redirect('login')
-    except User.DoesNotExist:
-        logger.error(f"[{request_id}] Guest user 'invite' does not exist.")
-        messages.error(request, "L'utilisateur invité n'existe pas.")
-        return redirect('login')
-
-
 def logout_view(request):
     request_id = str(uuid.uuid4())
     logger.info(f"[{request_id}] User {request.user} logging out.")
@@ -153,6 +125,52 @@ def statuses_page(request):
     except Exception as e:
         logger.exception(f"[{request_id}] Error rendering statuses_page for User={user}: {e}")
         return render(request, 'statuses.html', {
+            'raspberries': [],
+            'error': "Une erreur s'est produite lors de la récupération des données.",
+        })
+    
+
+def guest_statuses_page(request):
+    request_id = str(uuid.uuid4())
+    logger.debug(f"[{request_id}] Starting guest_statuses_page. User={request.user}, Method={request.method}")
+    user = User.objects.get(username="invite")
+
+    try:
+        logger.debug(f"[{request_id}] {user} is standard user. Fetching raspberries by group.")
+        user_groups = Group.objects.filter(user_groups__user=user)
+        if not user_groups.exists():
+            logger.warning(f"[{request_id}] {user} has no associated groups.")
+            return render(request, 'statuses_guest.html', {
+                'raspberries': [],
+                'error': "Vous n'êtes associé à aucun groupe.",
+            })
+        raspberries = Raspberry.objects.filter(group__in=user_groups, active=True).annotate(
+            last_data=Max('sensor_locations__sensor_data__timestamp')
+        )
+
+        current_time = now()
+        raspberry_status = []
+        for raspberry in raspberries:
+            if raspberry.last_data and raspberry.last_data >= current_time - timedelta(hours=1):
+                status = "En ligne"
+            else:
+                status = "Hors ligne"
+            raspberry_status.append({
+                'id': raspberry.id,
+                'device_id': raspberry.device_id,
+                'group': raspberry.group.name if raspberry.group else "Non Assigné",
+                'location': raspberry.location_description or "Non spécifié",
+                'status': status,
+                'last_data': (raspberry.last_data + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S') if raspberry.last_data else "Aucune donnée",
+            })
+
+        logger.info(f"[{request_id}] Rendered guest_statuses_page for User={user} with {len(raspberry_status)} raspberries.")
+        return render(request, 'statuses_guest.html', {
+            'raspberry_status': raspberry_status,
+        })
+    except Exception as e:
+        logger.exception(f"[{request_id}] Error rendering guest_statuses_page for User={user}: {e}")
+        return render(request, 'statuses_guest.html', {
             'raspberries': [],
             'error': "Une erreur s'est produite lors de la récupération des données.",
         })
