@@ -71,12 +71,20 @@ def guest_login(request):
     if request.user.is_authenticated:
         logger.info(f"[{request_id}] User {request.user} already authenticated, redirecting to statuses.")
         return redirect('statuses')
-    
+
+    guest_username = "invite"
+    guest_password = "invitetse"
+
     try:
-        guest_user = User.objects.get(username="invite")
-        login(request, guest_user)
-        logger.info(f"[{request_id}] Guest user {guest_user} logged in successfully.")
-        return redirect('statuses')
+        guest_user = User.objects.get(username=guest_username)
+        if guest_user.check_password(guest_password):
+            login(request, guest_user)
+            logger.info(f"[{request_id}] Guest user {guest_user} logged in successfully.")
+            return redirect('statuses')
+        else:
+            logger.error(f"[{request_id}] Incorrect password for guest user 'invite'.")
+            messages.error(request, "Mot de passe incorrect pour l'utilisateur invité.")
+            return redirect('login')
     except User.DoesNotExist:
         logger.error(f"[{request_id}] Guest user 'invite' does not exist.")
         messages.error(request, "L'utilisateur invité n'existe pas.")
