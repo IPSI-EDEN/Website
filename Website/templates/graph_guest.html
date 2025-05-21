@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid">
+
+    <h1 class="mt-4">Données pour la serre : {{ raspberry.device_id }}</h1>
+    <p><strong>Description :</strong> {{ raspberry.location_description }}</p>
+    <p><strong>Groupe :</strong> {{ raspberry.group.name }}</p>
+    <p><strong>Status :</strong> {{ raspberry.get_status_display }}</p>
+
+    <!-- Filtres - sélection de la plage de temps -->
+    <form method="get" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="timeRangeSelect" class="form-label">Plage de temps (heures)</label>
+                <select id="timeRangeSelect" name="time_range" class="form-select">
+                    <option value="24" {% if selected_time_range == 24 %}selected{% endif %}>24 heures</option>
+                    <option value="48" {% if selected_time_range == 48 %}selected{% endif %}>48 heures</option>
+                    <option value="72" {% if selected_time_range == 72 %}selected{% endif %}>72 heures</option>
+                </select>
+            </div>
+            <div class="col-md-6 align-self-end">
+                <button type="submit" class="custom-btn btn accented-btn">Filtrer</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Section des jauges -->
+    <div class="row">
+        <!-- Affichage Desktop (cartes) -->
+        <div class="col-12 d-none d-md-block">
+            <div class="row">
+                {% for gauge in gauges %}
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ gauge.title }}</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="{{ gauge.id }}" class="plot-container"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Carrousel Mobile -->
+        <div class="col-12 d-block d-md-none">
+            <div id="gaugeCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for gauge in gauges %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">{{ gauge.title }}</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="{{ gauge.id }}-mobile" class="plot-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#gaugeCarousel" data-bs-slide="prev">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    <span class="visually-hidden">Précédent</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#gaugeCarousel" data-bs-slide="next">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span class="visually-hidden">Suivant</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section des graphiques linéaires -->
+    <div class="row">
+        <div class="col-12 d-none d-md-block">
+            <div class="row">
+                {% for chart in charts %}
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ chart.title }}</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="{{ chart.id }}" class="plot-container"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Carrousel Mobile -->
+        <div class="col-12 d-block d-md-none">
+            <div id="chartCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for chart in charts %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">{{ chart.title }}</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="{{ chart.id }}-mobile" class="plot-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#chartCarousel" data-bs-slide="prev">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    <span class="visually-hidden">Précédent</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#chartCarousel" data-bs-slide="next">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span class="visually-hidden">Suivant</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var includeDate = {{ selected_time_range }} > 24;
+    
+        function initializePlots() {
+            // Initialisation des jauges
+            {% for gauge in gauges %}
+            var gaugeConfig = {{ gauge.json|safe }};
+            Plotly.newPlot('{{ gauge.id }}', gaugeConfig.data, {
+                ...gaugeConfig.layout,
+                template: 'plotly_white'
+            }, {responsive: true, displayModeBar: false, scrollZoom: false});
+            Plotly.newPlot('{{ gauge.id }}-mobile', gaugeConfig.data, {
+                ...gaugeConfig.layout,
+                template: 'plotly_white'
+            }, {responsive: true, displayModeBar: false, scrollZoom: false});
+            {% endfor %}
+    
+            // Initialisation des graphiques linéaires
+            {% for chart in charts %}
+            var chartConfig = {{ chart.json|safe }};
+            var chartLayout = {
+                ...chartConfig.layout,
+                template: 'plotly_white',
+                xaxis: {
+                    ...chartConfig.layout.xaxis,  // Conserve la config originale
+                    title: 'Temps',
+                    type: 'date',
+                    dtick: 900000,
+                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M',
+                    fixedrange: true  // Désactive le zoom et le déplacement sur l'axe X
+                },
+                yaxis: {
+                    ...chartConfig.layout.yaxis,  // Conserve la config originale
+                    fixedrange: true  // Désactive le zoom et le déplacement sur l'axe Y
+                }
+            };
+            Plotly.newPlot('{{ chart.id }}', chartConfig.data, chartLayout, {responsive: true, displayModeBar: false, scrollZoom: false});
+            Plotly.newPlot('{{ chart.id }}-mobile', chartConfig.data, chartLayout, {responsive: true, displayModeBar: false, scrollZoom: false});
+            {% endfor %}
+        }
+    
+        function fetchData() {
+            var timeRange = document.getElementById('timeRangeSelect').value;
+            fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Erreur réseau');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.length > 0) {
+                }
+            })
+            .catch(error => {
+                console.error("Erreur lors de la récupération des données:", error);
+            });
+        }
+    
+        initializePlots();
+        setInterval(fetchData, 10000);
+    });
+</script>
+{% endblock %}

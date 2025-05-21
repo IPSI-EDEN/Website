@@ -15,6 +15,7 @@ urlpatterns = [
 
     path('<int:id>/threshold/', raspberry.manage_greenhouse, name='raspberry_threshold'),
     path('<int:id>/graphs/', raspberry.graph_page, name='raspberry_charts'),
+    path('<int:id>/guest-graphs/', raspberry.guest_graph_page, name='guest_raspberry_charts'),
     path('raspberry/update/<int:id>/', raspberry.raspberry_update, name='raspberry_update'),
     path('raspberry/delete/<int:id>/', raspberry.raspberry_delete, name='raspberry_delete'),
     path('raspberry/<int:id>/<str:device>', raspberry.toggle_device, name='toggle_device'),

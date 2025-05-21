@@ -30,7 +30,7 @@
                         <span class="badge {% if raspberry.status == 'En ligne' %}bg-success{% else %}bg-danger{% endif %}">
                             {{ raspberry.status }}
                         </span>
-                        <a href="{% url 'raspberry_charts' raspberry.id %}" class="btn custom-btn btn-sm accented-btn">
+                        <a href="{% url 'guest_raspberry_charts' raspberry.id %}" class="btn custom-btn btn-sm accented-btn">
                             Détails
                         </a>
                     </div>

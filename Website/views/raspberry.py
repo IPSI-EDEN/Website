@@ -295,6 +295,252 @@ def graph_page(request, id):
     }
     return render(request, 'graph.html', context)
 
+def guest_graph_page(request, id):
+    raspberry = get_object_or_404(Raspberry, id=id)
+    sensor_locations = SensorLocation.objects.filter(raspberry=raspberry)
+
+    selected_time_range = int(request.GET.get('time_range', 24))
+    end_time = now()
+    start_time = end_time - timedelta(hours=selected_time_range)
+
+    sensor_data_qs = SensorData.objects.filter(
+        sensor_location__in=sensor_locations,
+        timestamp__gte=start_time
+    ).order_by('timestamp')
+
+    MAX_POINTS = 200
+    total_points = sensor_data_qs.count()
+    if total_points > MAX_POINTS:
+        step = total_points // MAX_POINTS
+        ids = list(sensor_data_qs.values_list('pk', flat=True))
+        ids = ids[::step]
+        sensor_data_qs = SensorData.objects.filter(pk__in=ids).order_by('timestamp')
+
+    sensor_data_list = list(sensor_data_qs)
+
+    TEMPERATURE_COLOR = "#FF5733"  # Rouge/orangé
+    HUMIDITY_COLOR = "#33CFFF"     # Bleu clair
+    WATER_COLOR = "#1f77b4"        # Bleu
+    SOIL_COLOR = "#2ca02c"         # Vert
+
+    soil_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+
+    soil_data_dict = {}
+    for loc in sensor_locations:
+        soil_data_dict[loc.id] = {
+            'name': loc.location_name,
+            'timestamps': [],
+            'values': []
+        }
+
+    time_labels = []
+    temperature_list = []
+    humidity_list = []
+    water_list = []
+
+    for data in sensor_data_list:
+        t_str = (data.timestamp + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
+        time_labels.append(t_str)
+        temperature_list.append(data.temperature if data.temperature is not None else None)
+        humidity_list.append(data.air_humidity if data.air_humidity is not None else None)
+        water_list.append(data.water_level if data.water_level is not None else None)
+
+        loc_id = data.sensor_location_id
+        soil_val = data.soil_moisture if data.soil_moisture is not None else 0
+        if isinstance(soil_val, list):
+            soil_val = soil_val[0] if soil_val else 0
+        soil_data_dict[loc_id]['timestamps'].append(t_str)
+        soil_data_dict[loc_id]['values'].append(soil_val)
+
+    soil_moisture_traces = []
+    for idx, (loc_id, info) in enumerate(soil_data_dict.items()):
+        if not info['timestamps']:
+            continue
+        trace = {
+            'x': info['timestamps'],
+            'y': info['values'],
+            'mode': 'lines+markers',
+            'type': 'scatter',
+            'name': info['name'],
+            'line': {'color': soil_colors[idx % len(soil_colors)]}
+        }
+        soil_moisture_traces.append(trace)
+
+    logger.debug(f"Soil moisture traces: {soil_moisture_traces}")
+    sum_soil = 0
+    count_soil = 0
+    for location in sensor_locations:
+        if location.soil_moisture is not None:
+            sum_soil += location.soil_moisture
+            count_soil += 1
+    current_soil_moisture = sum_soil / count_soil if count_soil > 0 else 0
+
+    if sensor_data_list:
+        latest = sensor_data_list[-1]
+        current_temperature = latest.temperature or 0
+        current_humidity = latest.air_humidity or 0
+        current_water_level = latest.water_level or 0
+    else:
+        current_temperature = 0
+        current_humidity = 0
+        current_water_level = 0
+
+    gauges = [
+        {
+            'id': 'temperatureGauge',
+            'title': 'Température (°C)',
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_temperature,
+                    'gauge': {
+                        'axis': {'range': [-10, 50]},
+                        'bar': {'color': TEMPERATURE_COLOR}
+                    }
+                }],
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+            })
+        },
+        {
+            'id': 'humidityGauge',
+            'title': 'Humidité de l’air (%)',
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_humidity,
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': HUMIDITY_COLOR}
+                    }
+                }],
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+            })
+        },
+        {
+            'id': 'soilMoistureGauge',
+            'title': 'Humidité du sol (%)',
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_soil_moisture,
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': SOIL_COLOR}
+                    }
+                }],
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+            })
+        },
+        {
+            'id': 'waterLevelGauge',
+            'title': "Niveau d’eau (%)",
+            'json': json.dumps({
+                'data': [{
+                    'type': 'indicator',
+                    'mode': 'gauge+number',
+                    'value': current_water_level,
+                    'gauge': {
+                        'axis': {'range': [0, 100]},
+                        'bar': {'color': WATER_COLOR}
+                    }
+                }],
+                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+            })
+        }
+    ]
+
+    charts = [
+        {
+            'id': 'temperatureChart',
+            'title': 'Évolution température (°C)',
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': temperature_list,
+                    'mode': 'lines+markers',
+                    'type': 'scatter',
+                    'line': {'color': TEMPERATURE_COLOR}
+                }],
+                'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
+                    'yaxis': {'range': [-10, 50]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
+            })
+        },
+        {
+            'id': 'humidityChart',
+            'title': "Évolution humidité de l'air (%)",
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': humidity_list,
+                    'mode': 'lines+markers',
+                    'type': 'scatter',
+                    'line': {'color': HUMIDITY_COLOR}
+                }],
+                'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
+                    'yaxis': {'range': [0, 100]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
+            })
+        },
+        {
+            'id': 'waterChart',
+            'title': "Niveau d'eau (%)",
+            'json': json.dumps({
+                'data': [{
+                    'x': time_labels,
+                    'y': water_list,
+                    'mode': 'lines+markers',
+                    'type': 'scatter',
+                    'line': {'color': WATER_COLOR}
+                }],
+                'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
+                    'yaxis': {'range': [0, 100]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
+            })
+        },
+        {
+            'id': 'soilChart',
+            'title': "Évolution de l'humidité du sol (%)",
+            'json': json.dumps({
+                'data': soil_moisture_traces,
+                'layout': {
+                    'xaxis': {
+                        'tickmode': 'auto',
+                        'nticks': 10 
+                    },
+                    'yaxis': {'range': [0, 100]},
+                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                }
+            })
+        }
+    ]
+
+    context = {
+        'raspberry': raspberry,
+        'gauges': gauges,
+        'charts': charts,
+        'selected_time_range': selected_time_range,
+    }
+    return render(request, 'graph.html', context)
+
 @login_required(login_url='login')
 def raspberry_update(request, id):
     raspberry = get_object_or_404(Raspberry, id=id)
