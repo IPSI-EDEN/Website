@@ -7,24 +7,6 @@
     <h1 class="mt-4">Données pour la serre : {{ raspberry.device_id }}</h1>
     <p><strong>Description :</strong> {{ raspberry.location_description }}</p>
     <p><strong>Groupe :</strong> {{ raspberry.group.name }}</p>
-    <p><strong>Status :</strong> {{ raspberry.get_status_display }}</p>
-
-    <!-- Filtres - sélection de la plage de temps -->
-    <form method="get" class="mb-4">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label for="timeRangeSelect" class="form-label">Plage de temps (heures)</label>
-                <select id="timeRangeSelect" name="time_range" class="form-select">
-                    <option value="24" {% if selected_time_range == 24 %}selected{% endif %}>24 heures</option>
-                    <option value="48" {% if selected_time_range == 48 %}selected{% endif %}>48 heures</option>
-                    <option value="72" {% if selected_time_range == 72 %}selected{% endif %}>72 heures</option>
-                </select>
-            </div>
-            <div class="col-md-6 align-self-end">
-                <button type="submit" class="custom-btn btn accented-btn">Filtrer</button>
-            </div>
-        </div>
-    </form>
 
     <!-- Section des jauges -->
     <div class="row">
@@ -139,7 +121,6 @@
   
       function initializePlots () {
   
-        /* --- Jauges --- */
         {% for gauge in gauges %}
         (function () {
           const cfg = {{ gauge.json|safe }};
@@ -184,7 +165,6 @@
         {% endfor %}
       }
   
-      /*  Récupération périodique – inchangé */
       function fetchData () {
         const tr = document.getElementById('timeRangeSelect').value;
         fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + tr, {
@@ -192,7 +172,17 @@
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
           .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.error); }))
-          .then(data => { /* maj éventuelle */ })
+          .then(data => { 
+            const { gauges, charts } = data;
+            gauges.forEach(gauge => {
+              Plotly.react(gauge.id, gauge.data, gauge.layout);
+              Plotly.react(gauge.id + '-mobile', gauge.data, gauge.layout);
+            });
+            charts.forEach(chart => {
+              Plotly.react(chart.id, chart.data, chart.layout);
+              Plotly.react(chart.id + '-mobile', chart.data, chart.layout);
+            });
+          })
           .catch(err => console.error('Erreur AJAX :', err));
       }
   

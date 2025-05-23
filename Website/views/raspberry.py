@@ -146,7 +146,6 @@ def graph_page(request, id):
         "margin":        {"l": 30, "r": 30, "t": 30, "b": 30}
     }
 
-    # Gauges -------------------------------------------------------------------
     gauges = [
         {
             "id": "temperatureGauge",
@@ -218,7 +217,6 @@ def graph_page(request, id):
         }
     ]
 
-    # Courbes d’historique ------------------------------------------------------
     charts = [
         {
             "id": "temperatureChart",
