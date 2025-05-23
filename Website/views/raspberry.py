@@ -139,149 +139,198 @@ def graph_page(request, id):
         current_humidity = 0
         current_water_level = 0
 
+    default_layout = {
+        "font":          {"color": "white"},
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "plot_bgcolor":  "rgba(0,0,0,0)",
+        "margin":        {"l": 30, "r": 30, "t": 30, "b": 30}
+    }
+
+    # Gauges -------------------------------------------------------------------
     gauges = [
         {
-            'id': 'temperatureGauge',
-            'title': 'Température (°C)',
-            'json': json.dumps({
-                'data': [{
-                    'type': 'indicator',
-                    'mode': 'gauge+number',
-                    'value': current_temperature,
-                    'gauge': {
-                        'axis': {'range': [-10, 50]},
-                        'bar': {'color': TEMPERATURE_COLOR}
+            "id": "temperatureGauge",
+            "title": "Température (°C)",
+            "json": json.dumps({
+                "data": [{
+                    "type":   "indicator",
+                    "mode":   "gauge+number",
+                    "value":  current_temperature,
+                    "number": {"font": {"color": "white"}},
+                    "gauge":  {
+                        "axis": {"range": [-10, 50], "tickcolor": "white"},
+                        "bar":  {"color": TEMPERATURE_COLOR}
                     }
                 }],
-                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                "layout": default_layout
             })
         },
         {
-            'id': 'humidityGauge',
-            'title': 'Humidité de l’air (%)',
-            'json': json.dumps({
-                'data': [{
-                    'type': 'indicator',
-                    'mode': 'gauge+number',
-                    'value': current_humidity,
-                    'gauge': {
-                        'axis': {'range': [0, 100]},
-                        'bar': {'color': HUMIDITY_COLOR}
+            "id": "humidityGauge",
+            "title": "Humidité de l’air (%)",
+            "json": json.dumps({
+                "data": [{
+                    "type":   "indicator",
+                    "mode":   "gauge+number",
+                    "value":  current_humidity,
+                    "number": {"font": {"color": "white"}},
+                    "gauge":  {
+                        "axis": {"range": [0, 100], "tickcolor": "white"},
+                        "bar":  {"color": HUMIDITY_COLOR}
                     }
                 }],
-                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                "layout": default_layout
             })
         },
         {
-            'id': 'soilMoistureGauge',
-            'title': 'Humidité du sol (%)',
-            'json': json.dumps({
-                'data': [{
-                    'type': 'indicator',
-                    'mode': 'gauge+number',
-                    'value': current_soil_moisture,
-                    'gauge': {
-                        'axis': {'range': [0, 100]},
-                        'bar': {'color': SOIL_COLOR}
+            "id": "soilMoistureGauge",
+            "title": "Humidité du sol (%)",
+            "json": json.dumps({
+                "data": [{
+                    "type":   "indicator",
+                    "mode":   "gauge+number",
+                    "value":  current_soil_moisture,
+                    "number": {"font": {"color": "white"}},
+                    "gauge":  {
+                        "axis": {"range": [0, 100], "tickcolor": "white"},
+                        "bar":  {"color": SOIL_COLOR}
                     }
                 }],
-                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                "layout": default_layout
             })
         },
         {
-            'id': 'waterLevelGauge',
-            'title': "Niveau d’eau (%)",
-            'json': json.dumps({
-                'data': [{
-                    'type': 'indicator',
-                    'mode': 'gauge+number',
-                    'value': current_water_level,
-                    'gauge': {
-                        'axis': {'range': [0, 100]},
-                        'bar': {'color': WATER_COLOR}
+            "id": "waterLevelGauge",
+            "title": "Niveau d’eau (%)",
+            "json": json.dumps({
+                "data": [{
+                    "type":   "indicator",
+                    "mode":   "gauge+number",
+                    "value":  current_water_level,
+                    "number": {"font": {"color": "white"}},
+                    "gauge":  {
+                        "axis": {"range": [0, 100], "tickcolor": "white"},
+                        "bar":  {"color": WATER_COLOR}
                     }
                 }],
-                'layout': {'margin': {'l': 30, 'r': 30, 't': 30, 'b': 30}}
+                "layout": default_layout
             })
         }
     ]
 
+    # Courbes d’historique ------------------------------------------------------
     charts = [
         {
-            'id': 'temperatureChart',
-            'title': 'Évolution température (°C)',
-            'json': json.dumps({
-                'data': [{
-                    'x': time_labels,
-                    'y': temperature_list,
-                    'mode': 'lines+markers',
-                    'type': 'scatter',
-                    'line': {'color': TEMPERATURE_COLOR}
+            "id": "temperatureChart",
+            "title": "Évolution température (°C)",
+            "json": json.dumps({
+                "data": [{
+                    "x":     time_labels,
+                    "y":     temperature_list,
+                    "mode":  "lines+markers",
+                    "type":  "scatter",
+                    "line":  {"color": TEMPERATURE_COLOR}
                 }],
-                'layout': {
-                    'xaxis': {
-                        'tickmode': 'auto',
-                        'nticks': 10 
+                "layout": {
+                    **default_layout,
+                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
+                    "xaxis":  {
+                        "tickmode":  "auto",
+                        "nticks":    10,
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
                     },
-                    'yaxis': {'range': [-10, 50]},
-                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                    "yaxis":  {
+                        "range":     [-10, 50],
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
+                    }
                 }
             })
         },
         {
-            'id': 'humidityChart',
-            'title': "Évolution humidité de l'air (%)",
-            'json': json.dumps({
-                'data': [{
-                    'x': time_labels,
-                    'y': humidity_list,
-                    'mode': 'lines+markers',
-                    'type': 'scatter',
-                    'line': {'color': HUMIDITY_COLOR}
+            "id": "humidityChart",
+            "title": "Évolution humidité de l'air (%)",
+            "json": json.dumps({
+                "data": [{
+                    "x":     time_labels,
+                    "y":     humidity_list,
+                    "mode":  "lines+markers",
+                    "type":  "scatter",
+                    "line":  {"color": HUMIDITY_COLOR}
                 }],
-                'layout': {
-                    'xaxis': {
-                        'tickmode': 'auto',
-                        'nticks': 10 
+                "layout": {
+                    **default_layout,
+                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
+                    "xaxis":  {
+                        "tickmode":  "auto",
+                        "nticks":    10,
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
                     },
-                    'yaxis': {'range': [0, 100]},
-                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                    "yaxis":  {
+                        "range":     [0, 100],
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
+                    }
                 }
             })
         },
         {
-            'id': 'waterChart',
-            'title': "Niveau d'eau (%)",
-            'json': json.dumps({
-                'data': [{
-                    'x': time_labels,
-                    'y': water_list,
-                    'mode': 'lines+markers',
-                    'type': 'scatter',
-                    'line': {'color': WATER_COLOR}
+            "id": "waterChart",
+            "title": "Niveau d'eau (%)",
+            "json": json.dumps({
+                "data": [{
+                    "x":     time_labels,
+                    "y":     water_list,
+                    "mode":  "lines+markers",
+                    "type":  "scatter",
+                    "line":  {"color": WATER_COLOR}
                 }],
-                'layout': {
-                    'xaxis': {
-                        'tickmode': 'auto',
-                        'nticks': 10 
+                "layout": {
+                    **default_layout,
+                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
+                    "xaxis":  {
+                        "tickmode":  "auto",
+                        "nticks":    10,
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
                     },
-                    'yaxis': {'range': [0, 100]},
-                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                    "yaxis":  {
+                        "range":     [0, 100],
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
+                    }
                 }
             })
         },
         {
-            'id': 'soilChart',
-            'title': "Évolution de l'humidité du sol (%)",
-            'json': json.dumps({
-                'data': soil_moisture_traces,
-                'layout': {
-                    'xaxis': {
-                        'tickmode': 'auto',
-                        'nticks': 10 
+            "id": "soilChart",
+            "title": "Évolution de l'humidité du sol (%)",
+            "json": json.dumps({
+                "data": soil_moisture_traces,
+                "layout": {
+                    **default_layout,
+                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
+                    "xaxis":  {
+                        "tickmode":  "auto",
+                        "nticks":    10,
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
                     },
-                    'yaxis': {'range': [0, 100]},
-                    'margin': {'l': 50, 'r': 50, 't': 50, 'b': 50}
+                    "yaxis":  {
+                        "range":     [0, 100],
+                        "tickfont":  {"color": "white"},
+                        "title_font":{"color": "white"},
+                        "color":     "white"
+                    }
                 }
             })
         }
