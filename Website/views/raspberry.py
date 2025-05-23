@@ -242,7 +242,7 @@ def graph_page(request, id):
                         "color":     "white"
                     },
                     "yaxis":  {
-                        "range":     [-10, 50],
+                        "range":     [0, 50],
                         "tickfont":  {"color": "white"},
                         "title_font":{"color": "white"},
                         "color":     "white"

@@ -125,74 +125,89 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var includeDate = {{ selected_time_range }} > 24;
-    
-        function initializePlots() {
-            // Initialisation des jauges
-            {% for gauge in gauges %}
-            var gaugeConfig = {{ gauge.json|safe }};
-            Plotly.newPlot('{{ gauge.id }}', gaugeConfig.data, {
-                ...gaugeConfig.layout,
-                template: 'plotly_white'
-            }, {responsive: true, displayModeBar: false, scrollZoom: false});
-            Plotly.newPlot('{{ gauge.id }}-mobile', gaugeConfig.data, {
-                ...gaugeConfig.layout,
-                template: 'plotly_white'
-            }, {responsive: true, displayModeBar: false, scrollZoom: false});
-            {% endfor %}
-    
-            // Initialisation des graphiques linéaires
-            {% for chart in charts %}
-            var chartConfig = {{ chart.json|safe }};
-            var chartLayout = {
-                ...chartConfig.layout,
-                template: 'plotly_white',
-                xaxis: {
-                    ...chartConfig.layout.xaxis,  // Conserve la config originale
-                    title: 'Temps',
-                    type: 'date',
-                    dtick: 900000,
-                    tickformat: includeDate ? '%d %b %H:%M' : '%H:%M',
-                    fixedrange: true  // Désactive le zoom et le déplacement sur l'axe X
-                },
-                yaxis: {
-                    ...chartConfig.layout.yaxis,  // Conserve la config originale
-                    fixedrange: true  // Désactive le zoom et le déplacement sur l'axe Y
-                }
-            };
-            Plotly.newPlot('{{ chart.id }}', chartConfig.data, chartLayout, {responsive: true, displayModeBar: false, scrollZoom: false});
-            Plotly.newPlot('{{ chart.id }}-mobile', chartConfig.data, chartLayout, {responsive: true, displayModeBar: false, scrollZoom: false});
-            {% endfor %}
+    document.addEventListener('DOMContentLoaded', () => {
+  
+      const includeDate = {{ selected_time_range }} > 24;
+  
+      function resizeAllPlots () {
+        document.querySelectorAll('.plot-container').forEach(el => {
+          if (el.offsetParent !== null) {            
+            Plotly.Plots.resize(el);
+          }
+        });
+      }
+  
+      function initializePlots () {
+  
+        /* --- Jauges --- */
+        {% for gauge in gauges %}
+        (function () {
+          const cfg = {{ gauge.json|safe }};
+          const layout = {
+            ...cfg.layout,
+            autosize: true,
+            margin: { t: 40, r: 10, b: 40, l: 40 }
+          };
+          Plotly.newPlot('{{ gauge.id }}', cfg.data, layout,
+            { responsive: true, displayModeBar: false, scrollZoom: false });
+          Plotly.newPlot('{{ gauge.id }}-mobile', cfg.data, layout,
+            { responsive: true, displayModeBar: false, scrollZoom: false });
+        })();
+        {% endfor %}
+  
+        {% for chart in charts %}
+        (function () {
+          const cfg = {{ chart.json|safe }};
+          const layout = {
+            ...cfg.layout,
+            autosize: true,
+            template: 'plotly_white',
+            xaxis: {
+              ...cfg.layout.xaxis,
+              title: 'Temps',
+              type: 'date',
+              dtick: 900000,
+              tickformat: includeDate ? '%d %b %H:%M' : '%H:%M',
+              fixedrange: true
+            },
+            yaxis: {
+              ...cfg.layout.yaxis,
+              fixedrange: true
+            },
+            margin: { t: 40, r: 10, b: 40, l: 40 }
+          };
+          Plotly.newPlot('{{ chart.id }}', cfg.data, layout,
+            { responsive: true, displayModeBar: false, scrollZoom: false });
+          Plotly.newPlot('{{ chart.id }}-mobile', cfg.data, layout,
+            { responsive: true, displayModeBar: false, scrollZoom: false });
+        })();
+        {% endfor %}
+      }
+  
+      /*  Récupération périodique – inchangé */
+      function fetchData () {
+        const tr = document.getElementById('timeRangeSelect').value;
+        fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + tr, {
+          credentials: 'same-origin',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+          .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.error); }))
+          .then(data => { /* maj éventuelle */ })
+          .catch(err => console.error('Erreur AJAX :', err));
+      }
+  
+      initializePlots();
+      setTimeout(resizeAllPlots, 100);
+  
+      
+      setInterval(fetchData, 60_000);      
+      window.addEventListener('resize', resizeAllPlots);
+      ['gaugeCarousel', 'chartCarousel'].forEach(id => {
+        const car = document.getElementById(id);
+        if (car) {
+          car.addEventListener('slid.bs.carousel', resizeAllPlots);
         }
-    
-        function fetchData() {
-            var timeRange = document.getElementById('timeRangeSelect').value;
-            fetch("{% url 'get_latest_sensor_data' raspberry.id %}?time_range=" + timeRange, {
-                credentials: 'same-origin',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.error || 'Erreur réseau');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.length > 0) {
-                }
-            })
-            .catch(error => {
-                console.error("Erreur lors de la récupération des données:", error);
-            });
-        }
-    
-        initializePlots();
-        setInterval(fetchData, 100);
+      });
     });
-</script>
+  </script>
 {% endblock %}
