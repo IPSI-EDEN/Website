@@ -127,7 +127,6 @@
           const layout = {
             ...cfg.layout,
             autosize: true,
-            margin: { t: 40, r: 10, b: 40, l: 40 }
           };
           Plotly.newPlot('{{ gauge.id }}', cfg.data, layout,
             { responsive: true, displayModeBar: false, scrollZoom: false });

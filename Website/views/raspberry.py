@@ -143,7 +143,7 @@ def graph_page(request, id):
         "font":          {"color": "white"},
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor":  "rgba(0,0,0,0)",
-        "margin":        {"l": 30, "r": 30, "t": 30, "b": 30}
+        "margin":        {"l": 20, "r": 30, "t": 00, "b": 30}
     }
 
     gauges = [
@@ -157,7 +157,7 @@ def graph_page(request, id):
                     "value":  current_temperature,
                     "number": {"font": {"color": "white"}},
                     "gauge":  {
-                        "axis": {"range": [-10, 50], "tickcolor": "white"},
+                        "axis": {"range": [0, 50], "tickcolor": "white"},
                         "bar":  {"color": TEMPERATURE_COLOR}
                     }
                 }],
