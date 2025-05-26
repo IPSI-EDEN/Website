@@ -145,7 +145,11 @@
             showlegend: false,
             xaxis: {
               ...cfg.layout.xaxis,
-              title: 'Temps',
+              title: { 
+                text: 'Temps',
+                standoff: 20
+              },
+              automargin: true,
               type: 'date',
               dtick: 900000,
               tickformat: includeDate ? '%d %b %H:%M' : '%H:%M',
@@ -153,9 +157,9 @@
             },
             yaxis: {
               ...cfg.layout.yaxis,
-              fixedrange: true
-            },
-            margin: { t: 70, r: 70, b: 70, l: 70 }
+              fixedrange: true,
+              automargin: true
+            }
           };
           Plotly.newPlot('{{ chart.id }}', cfg.data, layout,
             { responsive: true, displayModeBar: false, scrollZoom: false });

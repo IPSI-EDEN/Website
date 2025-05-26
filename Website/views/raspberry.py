@@ -143,7 +143,7 @@ def graph_page(request, id):
         "font":          {"color": "white"},
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor":  "rgba(0,0,0,0)",
-        "margin":        {"l": 20, "r": 30, "t": 00, "b": 30}
+        "margin":        {"l": 60, "r": 60, "t": 20, "b": 00}
     }
 
     gauges = [
@@ -231,7 +231,6 @@ def graph_page(request, id):
                 }],
                 "layout": {
                     **default_layout,
-                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
                     "xaxis":  {
                         "tickmode":  "auto",
                         "nticks":    10,
@@ -261,7 +260,6 @@ def graph_page(request, id):
                 }],
                 "layout": {
                     **default_layout,
-                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
                     "xaxis":  {
                         "tickmode":  "auto",
                         "nticks":    10,
@@ -291,7 +289,6 @@ def graph_page(request, id):
                 }],
                 "layout": {
                     **default_layout,
-                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
                     "xaxis":  {
                         "tickmode":  "auto",
                         "nticks":    10,
@@ -315,7 +312,6 @@ def graph_page(request, id):
                 "data": soil_moisture_traces,
                 "layout": {
                     **default_layout,
-                    "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
                     "xaxis":  {
                         "tickmode":  "auto",
                         "nticks":    10,
