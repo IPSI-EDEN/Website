@@ -124,15 +124,6 @@ export function initCharts(chartDataMap = {}) {
                             font: { size: 18 },
                             color: chartColor
                         },
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                font: { size: 14 },
-                                color: chartColor,
-                                padding: 20
-                            }
-                        },
                         datalabels: chartConfig.type === 'bar'
                             ? {
                                 display: true,
