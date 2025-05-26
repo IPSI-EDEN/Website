@@ -142,6 +142,7 @@
             ...cfg.layout,
             autosize: true,
             template: 'plotly_white',
+            showlegend: false,
             xaxis: {
               ...cfg.layout.xaxis,
               title: 'Temps',
@@ -154,7 +155,7 @@
               ...cfg.layout.yaxis,
               fixedrange: true
             },
-            margin: { t: 40, r: 10, b: 40, l: 40 }
+            margin: { t: 70, r: 70, b: 70, l: 70 }
           };
           Plotly.newPlot('{{ chart.id }}', cfg.data, layout,
             { responsive: true, displayModeBar: false, scrollZoom: false });
